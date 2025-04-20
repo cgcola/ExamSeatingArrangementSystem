@@ -1,0 +1,20 @@
+   <?xml version="1.0" encoding="UTF-8"?>
+
+   <?import javafx.scene.control.Button?>
+   <?import javafx.scene.control.TextField?>
+   <?import javafx.scene.layout.AnchorPane?>
+   <?import javafx.scene.layout.BorderPane?>
+
+   <BorderPane xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.seatingarrangementsystem.Controller">
+      <center>
+         <AnchorPane prefHeight="400.0" prefWidth="284.0" BorderPane.alignment="CENTER">
+            <children>
+
+               <Button fx:id="AttachButton" layoutX="14.0" layoutY="184.0" minWidth="39.0" onAction="#AttachOnClick" prefHeight="30.0" prefWidth="39.0" text="Attach" />
+
+               <Button fx:id="EnterFileButton" layoutX="204.0" layoutY="184.0" minWidth="44.0" onAction="#EnterOnClick" prefHeight="26.0" prefWidth="44.0" text="Enter" />
+               <TextField fx:id="SrcFile" layoutX="68.0" layoutY="186.0" onAction="#FileSrc" prefHeight="26.0" prefWidth="123.0" promptText="Enter file path..." />
+            </children>
+         </AnchorPane>
+      </center>
+   </BorderPane>
