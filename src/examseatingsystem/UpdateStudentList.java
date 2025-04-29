@@ -45,7 +45,7 @@ public class UpdateStudentList {
         String filename = "C:\\Users\\Zarra\\IdeaProjects\\OOPFinalProject\\OOPFinalProject\\src\\examseatingsystem\\resources\\" + section + "_StudentsList.csv";
         try (FileWriter writer = new FileWriter(filename, true)) {
             writer.write("\n" + stb.toString());
-            System.out.println("Student added successfully to " + filename);
+            System.out.println("Student" + studentID + "added successfully to " + filename);
         } catch (IOException e) {
             System.err.println("Error adding student: " + e.getMessage());
         }
@@ -96,7 +96,7 @@ public class UpdateStudentList {
     private void removeStudent(String studentId, String section) {
         String resourcesPath = "C:\\Users\\Zarra\\IdeaProjects\\OOPFinalProject\\OOPFinalProject\\src\\examseatingsystem\\resources\\";
 
-        // Remove student from the student list
+        // Remove student from the StudentList.csv
         String studentFile = resourcesPath + section + "_StudentsList.csv";
         deleteLineFromFile(studentFile, studentId);
 
@@ -118,7 +118,7 @@ public class UpdateStudentList {
     private void deleteLineFromFile(String filePath, String studentId) {
         File inputFile = new File(filePath);
 
-        // Create a temporary in-memory list to store file content without the studentId line
+        // List to store file content without the studentId line
         List<String> fileContent = new ArrayList<>();
 
         try (BufferedReader reader = new BufferedReader(new FileReader(inputFile))) {
@@ -135,7 +135,7 @@ public class UpdateStudentList {
             return;
         }
 
-        // Now, overwrite the file with the updated content
+        //Overwrite the file with the updated content
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(inputFile))) {
             for (String line : fileContent) {
                 writer.write(line);
