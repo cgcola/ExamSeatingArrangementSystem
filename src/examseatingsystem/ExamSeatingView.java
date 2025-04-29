@@ -11,7 +11,8 @@ public class ExamSeatingView {
         System.out.println("1. Generate Seating Arrangement");
         System.out.println("2. View Seating Arrangement");
         System.out.println("3. Save Seating Arrangement");
-        System.out.println("4. Exit");
+        System.out.println("4. Update Student List");
+        System.out.println("5. Exit");
         System.out.print("Enter your choice: ");
     }
 
