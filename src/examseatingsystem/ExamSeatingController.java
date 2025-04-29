@@ -8,6 +8,7 @@ public class ExamSeatingController {
     private ExamSeatingModel model;
     private ExamSeatingView view;
     private Scanner scanner;
+    private UpdateStudentList newStudent = new UpdateStudentList();
 
     public ExamSeatingController(ExamSeatingModel model, ExamSeatingView view) {
         this.model = model;
@@ -32,6 +33,9 @@ public class ExamSeatingController {
                     saveSeatingArrangement();
                     break;
                 case "4":
+                    newStudent.updateStudentList();
+                    break;
+                case "5":
                     running = false;
                     view.showMessage("Exiting system. Goodbye!");
                     break;
