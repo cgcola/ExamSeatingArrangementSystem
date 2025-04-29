@@ -9,7 +9,7 @@ public class ExamSeatingSystem {
         ExamSeatingController controller = new ExamSeatingController(model, view);
 
         try {
-            String directoryPath = "C:\\Users\\Carl\\OneDrive\\Documents\\2ndYear-2ndSem\\Object Oriented Programming - Programming NC IV\\OOPFinalProject";
+            String directoryPath = "C:\\Users\\Zarra\\IdeaProjects\\OOPFinalProject\\OOPFinalProject\\src\\examseatingsystem\\resources";
             model.loadData(directoryPath);
             controller.start();
         } catch (IOException e) {
