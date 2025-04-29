@@ -7,6 +7,9 @@ public class UpdateStudentList {
     Scanner sc = new Scanner(System.in);
     StringBuilder stb = new StringBuilder();
 
+    ExamSeatingModel model = new ExamSeatingModel();
+    ExamSeatingView view = new ExamSeatingView();
+
     public void updateStudentList() {
         System.out.println("Process:\n[A] Add\n[R] Remove");
         System.out.print("Enter: ");
@@ -31,9 +34,11 @@ public class UpdateStudentList {
             case "A":
                 addData(stb, id, section);
                 enrolledCourses(id, section);
+                reloadData();
                 break;
             case "R":
                 removeStudent(id, section);
+                reloadData();
                 break;
             default:
                 System.out.println("Invalid option.");
@@ -143,6 +148,15 @@ public class UpdateStudentList {
             }
         } catch (IOException e) {
             System.err.println("Error writing to file: " + filePath);
+        }
+    }
+
+    public void reloadData(){
+        try {
+            String directoryPath = "C:\\Users\\Zarra\\IdeaProjects\\OOPFinalProject\\OOPFinalProject\\src\\examseatingsystem\\resources";
+            model.loadData(directoryPath);
+        } catch (IOException e) {
+            view.showError("Error loading data: " + e.getMessage());
         }
     }
 }
