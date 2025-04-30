@@ -59,12 +59,28 @@ public class ExamSeatingController {
             int examIndex = Integer.parseInt(input) - 1;
             if (examIndex >= 0 && examIndex < exams.size()) {
                 Exam selectedExam = exams.get(examIndex);
+
+                // Check if arrangement already exists
+                boolean arrangementExists = checkExistingArrangement(selectedExam);
+
+                if (arrangementExists) {
+                    view.showMessage("Seating arrangement already exists for " + selectedExam.getCourseCode());
+                    view.showMessage("Do you want to regenerate it? (Y?N)");
+                    String regenerate = scanner.nextLine().trim().toUpperCase();
+
+                    if (!regenerate.equals("Y")) {
+                        view.showMessage("Generation cancelled.");
+                        return;
+                    }
+                    // User wants to regenerate - continue with generation
+                }
+
                 // Reset seats for the room before assigning
                 model.getSeats().stream()
                         .filter(s -> s.getRoom().equals(selectedExam.getRoom()))
                         .forEach(s -> s.assignStudent(null));
                 model.assignSeating(selectedExam);
-                view.showMessage("Seating arrangement generated for " + selectedExam.getCourse().getCourseCode());
+                view.showMessage("Seating arrangement generated for " + selectedExam.getCourseCode());
             } else {
                 view.showError("Invalid exam selection.");
             }
@@ -113,8 +129,32 @@ public class ExamSeatingController {
             if (examIndex >= 0 && examIndex < exams.size()) {
                 Exam selectedExam = exams.get(examIndex);
                 String room = selectedExam.getRoom();
-                String fileName = "Seating_Arrangement_" + selectedExam.getCourse().getCourseCode() + "_" + room + ".csv";
-                try (PrintWriter writer = new PrintWriter(new File(fileName))) {
+                String fileName = "Seating_Arrangement_" + selectedExam.getCourseCode() + "_" + room + ".csv";
+
+                // Define output directory under 'resources/seating_arrangements'
+                File resourceDir = new File("C:\\Users\\Zarra\\IdeaProjects\\OOPFinalProject\\OOPFinalProject\\src\\examseatingsystem\\seating_arrangement");
+
+                // Ensure directory exists
+                if (!resourceDir.exists()) {
+                    resourceDir.mkdirs();
+                }
+
+                File file = new File(resourceDir, fileName);
+
+                // Check if file already exists
+                if (file.exists()) {
+                    view.showMessage("File " + fileName + " already exists.");
+                    view.showMessage("Do you want to overwrite it? (Y/N)");
+                    String overwrite = scanner.nextLine().trim().toUpperCase();
+
+                    if (!overwrite.equals("Y")) {
+                        view.showMessage("Save operation cancelled.");
+                        return;
+                    }
+                    // User confirmed overwrite - continue with save
+                }
+
+                try (PrintWriter writer = new PrintWriter(file)) {
                     // Write CSV header
                     writer.println("Room,Row,Column,StudentId,StudentName");
                     for (Seat seat : model.getSeats()) {
@@ -135,5 +175,14 @@ public class ExamSeatingController {
         } catch (NumberFormatException e) {
             view.showError("Please enter a valid number.");
         }
+    }
+
+    private boolean checkExistingArrangement(Exam exam) {
+        String room = exam.getRoom();
+
+        // Check if at least one seat in this room has a student assigned
+        return model.getSeats().stream()
+                .filter(s -> s.getRoom().equals(room))
+                .anyMatch(Seat::isOccupied);
     }
 }
