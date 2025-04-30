@@ -96,7 +96,7 @@ public class ExamSeatingModel {
                 reader.readLine();
                 while ((line = reader.readLine()) != null) {
                     String[] data = line.split(",");
-                    if (data.length >= 2) {
+                    if (data.length >= 2) { //Changed to 2
                         enrolledStudents.add(data[1].trim()); //Changed 0 to 1
                     }
                 }
