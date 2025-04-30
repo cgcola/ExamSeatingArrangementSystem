@@ -23,8 +23,8 @@ public class UpdateStudentList{
 
         StudentInput input = getStudentInput();
         StringBuilder stb = new StringBuilder();
-        stb.append(input.getId()).append(", ").append(input.getName()).append(", ")
-                .append(input.getType()).append(", ").append(input.getProgramCode());
+        stb.append(input.getId()).append(",").append(input.getName()).append(",")
+                .append(input.getType()).append(",").append(input.getProgramCode());
 
         switch (choice) {
             case "1":
@@ -122,7 +122,6 @@ public class UpdateStudentList{
                 System.out.println("Invalid course selection: " + idx);
             }
         }
-        reloadData();
         System.out.println("Student enrollment complete.");
     }
 
@@ -145,7 +144,6 @@ public class UpdateStudentList{
             deleteLineFromFile(courseFile, studentId);
         }
 
-        reloadData();
         System.out.println("Student " + studentId + " removed from the system.");
     }
 
@@ -178,18 +176,6 @@ public class UpdateStudentList{
             }
         } catch (IOException e) {
             System.err.println("Error writing to file: " + filePath);
-        }
-    }
-
-    public void reloadData(){
-        try {
-            String directoryPath = "C:\\Users\\Zarra\\IdeaProjects\\OOPFinalProject\\OOPFinalProject\\src\\examseatingsystem\\resources";
-            model.loadStudents(directoryPath + "\\2BSCS-1_StudentsList.csv");
-            model.loadStudents(directoryPath + "\\2BSCS-2_StudentsList.csv");
-            model.loadCourses(directoryPath + "\\Courses.csv");
-            model.loadEnrollments(directoryPath);
-        } catch (IOException e) {
-            ExamSeatingView.showError("Error loading data: " + e.getMessage());
         }
     }
 }
