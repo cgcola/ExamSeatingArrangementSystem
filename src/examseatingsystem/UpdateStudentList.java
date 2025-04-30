@@ -6,7 +6,6 @@ import java.lang.*;
 
 public class UpdateStudentList{
     Scanner sc = new Scanner(System.in);
-    StringBuilder stb = new StringBuilder();
     ExamSeatingModel model = new ExamSeatingModel();
 
     public void updateStudentList() throws IOException {
@@ -15,37 +14,63 @@ public class UpdateStudentList{
         System.out.println("2. Remove student");
         System.out.println("3. Back to main menu");
         System.out.print("Enter your choice: ");
-
         String choice = sc.nextLine().trim();
 
-        System.out.print("Enter student ID: ");
-        String id = sc.nextLine().trim();
-        stb.append(id).append(", ");
-        System.out.print("Name: ");
-        String name = sc.nextLine().trim();
-        stb.append(name).append(", ");
-        System.out.print("Type (Regular/Irregular): ");
-        String type = sc.nextLine().trim();
-        stb.append(type).append(", ");
-        System.out.print("Program Code: ");
-        String programCode = sc.nextLine().trim();
-        stb.append(programCode);
-        System.out.print("Year and Section: ");
-        String section = sc.nextLine().trim();
+        if (choice.equals("3")) {
+            System.out.println("Returning to main menu.");
+            return;
+        }
+
+        StudentInput input = getStudentInput();
+        StringBuilder stb = new StringBuilder();
+        stb.append(input.id).append(", ").append(input.name).append(", ")
+                .append(input.type).append(", ").append(input.programCode);
 
         switch (choice) {
             case "1":
-                addData(stb, id, section);
-                enrolledCourses(id, section);
+                addData(stb, input.getId(), input.getSection());
+                enrolledCourses(input.getId(), input.getSection());
                 break;
             case "2":
-                removeStudent(id, section);
-                break;
-            case "3":
-                System.out.println("Returning to main menu.");
+                removeStudent(input.getId(), input.getSection());
                 break;
             default:
                 System.out.println("Invalid choice. Returning to main menu.");
+        }
+    }
+
+    private StudentInput getStudentInput() {
+        while (true) {
+            try {
+                System.out.print("Enter student ID: ");
+                String id = sc.nextLine().trim();
+                if (id.isEmpty()) throw new IllegalArgumentException("Student ID cannot be empty.");
+
+                System.out.print("Name: ");
+                String name = sc.nextLine().trim();
+                if (name.isEmpty()) throw new IllegalArgumentException("Name cannot be empty.");
+
+                System.out.print("Type (Regular/Irregular): ");
+                String type = sc.nextLine().trim();
+                if (type.isEmpty()) throw new IllegalArgumentException("Type cannot be empty.");
+
+                System.out.print("Program Code: ");
+                String programCode = sc.nextLine().trim();
+                if (programCode.isEmpty()) throw new IllegalArgumentException("Program Code cannot be empty.");
+
+                System.out.print("Year and Section: ");
+                String section = sc.nextLine().trim();
+                if (section.isEmpty()) throw new IllegalArgumentException("Section cannot be empty.");
+
+                return new StudentInput(id, name, type, programCode, section);
+
+            } catch (IllegalArgumentException e) {
+                System.out.println("Input error: " + e.getMessage());
+                System.out.println("Please try again.\n");
+            } catch (Exception e) {
+                System.out.println("Unexpected error: " + e.getMessage());
+                System.out.println("Please try again.\n");
+            }
         }
     }
 
@@ -54,7 +79,7 @@ public class UpdateStudentList{
         String filename = "C:\\Users\\Zarra\\IdeaProjects\\OOPFinalProject\\OOPFinalProject\\src\\examseatingsystem\\resources\\" + section + "_StudentsList.csv";
         try (FileWriter writer = new FileWriter(filename, true)) {
             writer.write("\n" + stb.toString());
-            System.out.println("Student " + studentID + "added successfully to " + section + "_StudentsList.csv");
+            System.out.println("Student " + studentID + " added successfully to " + section + "_StudentsList.csv");
         } catch (IOException e) {
             System.err.println("Error adding student: " + e.getMessage());
         }
