@@ -16,6 +16,7 @@ public class ExamSeatingModel {
     private List<Seat> seats;
     private SeatingStrategy seatingStrategy;
     private Map<String, List<String>> courseEnrollments;
+    //private List<String> enrolledStudents = new ArrayList<>();
 
     public ExamSeatingModel() {
         students = new ArrayList<>();
@@ -35,7 +36,7 @@ public class ExamSeatingModel {
         generateSeats(); // Replace loadSeats with generateSeats
     }
 
-    private void loadStudents(String filePath) throws IOException {
+    public void loadStudents(String filePath) throws IOException {
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
             String line;
             reader.readLine();
@@ -48,7 +49,7 @@ public class ExamSeatingModel {
         }
     }
 
-    private void loadCourses(String filePath) throws IOException {
+    public void loadCourses(String filePath) throws IOException {
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
             String line;
             reader.readLine();
@@ -70,7 +71,7 @@ public class ExamSeatingModel {
         }
     }
 
-    private void loadEnrollments(String directoryPath) throws IOException {
+    public void loadEnrollments(String directoryPath) throws IOException {
         String[] enrollmentFiles = {
                 "2BSCS-1_CCC211-18_Enrolled.csv", "2BSCS-1_CCL211-18_Enrolled.csv",
                 "2BSCS-1_CCS212-18_Enrolled.csv", "2BSCS-1_CCS213-18_Enrolled.csv",
@@ -95,7 +96,7 @@ public class ExamSeatingModel {
                 reader.readLine();
                 while ((line = reader.readLine()) != null) {
                     String[] data = line.split(",");
-                    if (data.length >= 1) {
+                    if (data.length >= 2) {
                         enrolledStudents.add(data[1].trim()); //Changed 0 to 1
                     }
                 }
@@ -205,6 +206,14 @@ public class ExamSeatingModel {
 
         seatingStrategy.assignSeats(enrolledStudents, availableSeats, exam);
     }
+
+ /*   public void clearList(){
+        students.clear();
+        exams.clear();
+        seats.clear();
+        enrolledStudents.clear();
+        courseEnrollments.clear();
+    }*/
 
     public List<Exam> getExams() {
         return exams;
