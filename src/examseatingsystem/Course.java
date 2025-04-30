@@ -9,6 +9,10 @@ public class Course {
         this.courseName = courseName;
     }
 
-    public String getCourseCode() { return courseCode; }
-    public String getCourseName() { return courseName; }
+    public String getCourseCode() {
+        return courseCode;
+    }
+    public String getCourseName() {
+        return courseName;
+    }
 }

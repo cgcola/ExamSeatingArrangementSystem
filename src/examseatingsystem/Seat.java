@@ -13,10 +13,22 @@ public class Seat {
         this.student = null;
     }
 
-    public boolean isOccupied() { return student != null; }
-    public void assignStudent(Student student) { this.student = student; }
-    public Student getStudent() { return student; }
-    public String getRoom() { return room; }
-    public int getRow() { return row; }
-    public int getColumn() { return column; }
+    public boolean isOccupied() {
+        return student != null;
+    }
+    public void assignStudent(Student student) {
+        this.student = student;
+    }
+    public Student getStudent() {
+        return student;
+    }
+    public String getRoom() {
+        return room;
+    }
+    public int getRow() {
+        return row;
+    }
+    public int getColumn() {
+        return column;
+    }
 }

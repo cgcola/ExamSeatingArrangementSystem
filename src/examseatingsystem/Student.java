@@ -11,7 +11,13 @@ public class Student {
         this.program = program;
     }
 
-    public String getStudentId() { return studentId; }
-    public String getName() { return name; }
-    public String getProgram() { return program; }
+    public String getStudentId() {
+        return studentId;
+    }
+    public String getName() {
+        return name;
+    }
+    public String getProgram() {
+        return program;
+    }
 }

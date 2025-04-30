@@ -32,7 +32,7 @@ public class ExamSeatingModel {
         loadCourses(directoryPath + "\\Courses.csv");
         loadEnrollments(directoryPath);
         loadExamSchedule(directoryPath + "\\Exam_Schedule.csv");
-        generateSeats(); // Replace loadSeats with generateSeats
+        generateSeats();
     }
 
     private void loadStudents(String filePath) throws IOException {
@@ -206,6 +206,10 @@ public class ExamSeatingModel {
         seatingStrategy.assignSeats(enrolledStudents, availableSeats, exam);
     }
 
-    public List<Exam> getExams() { return exams; }
-    public List<Seat> getSeats() { return seats; }
+    public List<Exam> getExams() {
+        return exams;
+    }
+    public List<Seat> getSeats() {
+        return seats;
+    }
 }
