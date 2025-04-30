@@ -42,7 +42,7 @@ public class ExamSeatingModel {
             while ((line = reader.readLine()) != null) {
                 String[] data = line.split(",");
                 if (data.length >= 3) {
-                    students.add(new Student(data[0].trim(), data[1].trim(), data[2].trim()));
+                    students.add(new Student(data[0].trim(), data[1].trim(), data[3].trim()));
                 }
             }
         }
@@ -96,7 +96,7 @@ public class ExamSeatingModel {
                 while ((line = reader.readLine()) != null) {
                     String[] data = line.split(",");
                     if (data.length >= 1) {
-                        enrolledStudents.add(data[0].trim());
+                        enrolledStudents.add(data[1].trim()); //Changed 0 to 1
                     }
                 }
                 courseEnrollments.put(courseCode, enrolledStudents);
@@ -139,7 +139,7 @@ public class ExamSeatingModel {
                         String room = data[4].trim();
                         String section = data[1].trim();
                         if (exams.stream().noneMatch(e ->
-                                e.getCourse().getCourseCode().equals(courseCode) &&
+                                e.getCourseCode().equals(courseCode) &&
                                         e.getSection().equals(section) &&
                                         e.getExamDateTime().equals(dateTime) &&
                                         e.getRoom().equals(room))) {
@@ -198,7 +198,7 @@ public class ExamSeatingModel {
     }
 
     public void assignSeating(Exam exam) throws SeatingException {
-        List<Student> enrolledStudents = getEnrolledStudents(exam.getCourse().getCourseCode());
+        List<Student> enrolledStudents = getEnrolledStudents(exam.getCourseCode());
         List<Seat> availableSeats = seats.stream()
                 .filter(s -> s.getRoom().equals(exam.getRoom()) && !s.isOccupied())
                 .collect(Collectors.toList());
@@ -206,6 +206,10 @@ public class ExamSeatingModel {
         seatingStrategy.assignSeats(enrolledStudents, availableSeats, exam);
     }
 
-    public List<Exam> getExams() { return exams; }
-    public List<Seat> getSeats() { return seats; }
+    public List<Exam> getExams() {
+        return exams;
+    }
+    public List<Seat> getSeats() {
+        return seats;
+    }
 }
