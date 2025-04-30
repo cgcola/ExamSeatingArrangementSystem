@@ -3,7 +3,7 @@ package examseatingsystem;
 import java.io.*;
 import java.util.*;
 
-public class UpdateStudentList {
+public class UpdateStudentList{
     Scanner sc = new Scanner(System.in);
     StringBuilder stb = new StringBuilder();
 
@@ -11,9 +11,13 @@ public class UpdateStudentList {
     ExamSeatingView view = new ExamSeatingView();
 
     public void updateStudentList() {
-        System.out.println("Process:\n[A] Add\n[R] Remove");
-        System.out.print("Enter: ");
-        String input = sc.nextLine().trim().toUpperCase();
+        System.out.println("\n=== Update Student List ===");
+        System.out.println("1. Add new student");
+        System.out.println("2. Remove student");
+        System.out.println("3. Back to main menu");
+        System.out.print("Enter your choice: ");
+
+        String choice = sc.nextLine().trim();
 
         System.out.print("Enter student ID: ");
         String id = sc.nextLine().trim();
@@ -30,18 +34,21 @@ public class UpdateStudentList {
         System.out.print("Year and Section: ");
         String section = sc.nextLine().trim();
 
-        switch (input) {
-            case "A":
+        switch (choice) {
+            case "1":
                 addData(stb, id, section);
                 enrolledCourses(id, section);
                 reloadData();
                 break;
-            case "R":
+            case "2":
                 removeStudent(id, section);
                 reloadData();
                 break;
+            case "3":
+                System.out.println("Returning to main menu.");
+                break;
             default:
-                System.out.println("Invalid option.");
+                System.out.println("Invalid choice. Returning to main menu.");
         }
     }
 
@@ -50,7 +57,7 @@ public class UpdateStudentList {
         String filename = "C:\\Users\\Zarra\\IdeaProjects\\OOPFinalProject\\OOPFinalProject\\src\\examseatingsystem\\resources\\" + section + "_StudentsList.csv";
         try (FileWriter writer = new FileWriter(filename, true)) {
             writer.write("\n" + stb.toString());
-            System.out.println("Student" + studentID + "added successfully to " + filename);
+            System.out.println("Student " + studentID + "added successfully to " + section);
         } catch (IOException e) {
             System.err.println("Error adding student: " + e.getMessage());
         }
