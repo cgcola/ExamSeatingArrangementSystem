@@ -26,7 +26,7 @@ public class ExamSeatingView {
             String formattedDateTime = exam.getExamDateTime().format(DATE_TIME_FORMATTER);
             System.out.printf("%-5d %-15s %-15s %-25s %-15s%n",
                     (i + 1),
-                    exam.getCourse().getCourseCode(),
+                    exam.getCourseCode(),
                     exam.getSection(),
                     formattedDateTime,
                     exam.getRoom());
@@ -80,8 +80,8 @@ public class ExamSeatingView {
     public void displaySeatingTable(Exam exam, List<Seat> seats) {
         System.out.println("\nSeating Arrangement Table");
         System.out.println("==================================================================================================");
-        System.out.printf("Subject Code: %-15s%n", exam.getCourse().getCourseCode());
-        System.out.printf("Subject Name: %-40s%n", exam.getCourse().getCourseName());
+        System.out.printf("Subject Code: %-15s%n", exam.getCourseCode());
+        System.out.printf("Subject Name: %-40s%n", exam.getCourseName());
         System.out.printf("Date of Exam: %-15s%n", exam.getExamDateTime().toLocalDate());
         System.out.printf("Time of Exam: %-15s%n", exam.getExamDateTime().toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm")));
         System.out.printf("Section: %-15s%n", exam.getSection());
