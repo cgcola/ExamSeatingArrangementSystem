@@ -34,6 +34,7 @@ public class ExamSeatingController {
                     break;
                 case "4":
                     newStudent.updateStudentList();
+                    reloadData();
                     break;
                 case "5":
                     running = false;
@@ -44,6 +45,20 @@ public class ExamSeatingController {
             }
         }
         scanner.close();
+    }
+
+    private void reloadData() throws IOException {
+        try {
+            String resourcesPath = "C:\\Users\\Zarra\\IdeaProjects\\OOPFinalProject\\OOPFinalProject\\src\\examseatingsystem\\resources";
+            model.loadStudents(resourcesPath + "\\2BSCS-1_StudentsList.csv");
+            model.loadStudents(resourcesPath + "\\2BSCS-2_StudentsList.csv");
+            model.loadCourses(resourcesPath + "\\Courses.csv");
+            model.loadEnrollments(resourcesPath);
+            view.showMessage("Data has been reloaded successfully.");
+        } catch (IOException e) {
+            view.showError("Error reloading data: " + e.getMessage());
+            throw e;
+        }
     }
 
     private void generateSeatingArrangement() {
