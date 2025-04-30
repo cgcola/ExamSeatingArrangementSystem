@@ -2,15 +2,14 @@ package examseatingsystem;
 
 import java.io.*;
 import java.util.*;
+import java.lang.*;
 
 public class UpdateStudentList{
     Scanner sc = new Scanner(System.in);
     StringBuilder stb = new StringBuilder();
-
     ExamSeatingModel model = new ExamSeatingModel();
-    ExamSeatingView view = new ExamSeatingView();
 
-    public void updateStudentList() {
+    public void updateStudentList() throws IOException {
         System.out.println("\n=== Update Student List ===");
         System.out.println("1. Add new student");
         System.out.println("2. Remove student");
@@ -38,11 +37,9 @@ public class UpdateStudentList{
             case "1":
                 addData(stb, id, section);
                 enrolledCourses(id, section);
-                reloadData();
                 break;
             case "2":
                 removeStudent(id, section);
-                reloadData();
                 break;
             case "3":
                 System.out.println("Returning to main menu.");
@@ -57,20 +54,20 @@ public class UpdateStudentList{
         String filename = "C:\\Users\\Zarra\\IdeaProjects\\OOPFinalProject\\OOPFinalProject\\src\\examseatingsystem\\resources\\" + section + "_StudentsList.csv";
         try (FileWriter writer = new FileWriter(filename, true)) {
             writer.write("\n" + stb.toString());
-            System.out.println("Student " + studentID + "added successfully to " + section);
+            System.out.println("Student " + studentID + "added successfully to " + section + "_StudentsList.csv");
         } catch (IOException e) {
             System.err.println("Error adding student: " + e.getMessage());
         }
     }
 
-    public void enrolledCourses(String studentId, String section) {
+    public void enrolledCourses(String studentId, String section) throws IOException {
         String[] courses = {"[1]CCC211-18", "[2]CCL211-18", "[3]CCS212-18", "[4]CCS213-18", "[5]FILDIS-18", "[6]GECLWR-18", "[7]GECSTS-18", "[8]GECTCW-18", "[9]PE3ID-18"};
         System.out.println("Available Courses:");
         for (String course : courses) {
             System.out.println(course);
         }
 
-        System.out.println("Enter enrolled courses (Use comma-separated numbers, e.g., 1,2,5): ");
+        System.out.print("Enter enrolled courses (Use comma-separated numbers, e.g., 1,2,5): ");
         String input = sc.nextLine().trim();
         String[] selectedIndexes = input.split(",");
 
@@ -100,12 +97,12 @@ public class UpdateStudentList{
                 System.out.println("Invalid course selection: " + idx);
             }
         }
-
+        reloadData();
         System.out.println("Student enrollment complete.");
     }
 
     // Remove student from the system
-    private void removeStudent(String studentId, String section) {
+    private void removeStudent(String studentId, String section) throws IOException {
         String resourcesPath = "C:\\Users\\Zarra\\IdeaProjects\\OOPFinalProject\\OOPFinalProject\\src\\examseatingsystem\\resources\\";
 
         // Remove student from the StudentList.csv
@@ -123,6 +120,7 @@ public class UpdateStudentList{
             deleteLineFromFile(courseFile, studentId);
         }
 
+        reloadData();
         System.out.println("Student " + studentId + " removed from the system.");
     }
 
@@ -161,9 +159,13 @@ public class UpdateStudentList{
     public void reloadData(){
         try {
             String directoryPath = "C:\\Users\\Zarra\\IdeaProjects\\OOPFinalProject\\OOPFinalProject\\src\\examseatingsystem\\resources";
-            model.loadData(directoryPath);
+            //model.clearList();
+            model.loadStudents(directoryPath + "\\2BSCS-1_StudentsList.csv");
+            model.loadStudents(directoryPath + "\\2BSCS-2_StudentsList.csv");
+            model.loadCourses(directoryPath + "\\Courses.csv");
+            model.loadEnrollments(directoryPath);
         } catch (IOException e) {
-            view.showError("Error loading data: " + e.getMessage());
+            ExamSeatingView.showError("Error loading data: " + e.getMessage());
         }
     }
 }
