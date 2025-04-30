@@ -16,7 +16,7 @@ public class ExamSeatingController {
         this.scanner = new Scanner(System.in);
     }
 
-    public void start() {
+    public void start() throws IOException {
         boolean running = true;
         while (running) {
             view.displayMenu();
@@ -129,7 +129,7 @@ public class ExamSeatingController {
             if (examIndex >= 0 && examIndex < exams.size()) {
                 Exam selectedExam = exams.get(examIndex);
                 String room = selectedExam.getRoom();
-                String fileName = "Seating_Arrangement_" + selectedExam.getCourseCode() + "_" + room + ".csv";
+                String fileName = "Seating_Arrangement_" + selectedExam.getSection() + "_" + selectedExam.getCourseCode() + "_" + room + ".csv";
 
                 // Define output directory under 'resources/seating_arrangements'
                 File resourceDir = new File("C:\\Users\\Zarra\\IdeaProjects\\OOPFinalProject\\OOPFinalProject\\src\\examseatingsystem\\seating_arrangement");
