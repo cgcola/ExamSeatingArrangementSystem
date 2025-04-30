@@ -16,7 +16,6 @@ public class ExamSeatingModel {
     private List<Seat> seats;
     private SeatingStrategy seatingStrategy;
     private Map<String, List<String>> courseEnrollments;
-    //private List<String> enrolledStudents = new ArrayList<>();
 
     public ExamSeatingModel() {
         students = new ArrayList<>();
@@ -37,6 +36,7 @@ public class ExamSeatingModel {
     }
 
     public void loadStudents(String filePath) throws IOException {
+        students.clear();
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
             String line;
             reader.readLine();
@@ -72,6 +72,7 @@ public class ExamSeatingModel {
     }
 
     public void loadEnrollments(String directoryPath) throws IOException {
+        courseEnrollments.clear();
         String[] enrollmentFiles = {
                 "2BSCS-1_CCC211-18_Enrolled.csv", "2BSCS-1_CCL211-18_Enrolled.csv",
                 "2BSCS-1_CCS212-18_Enrolled.csv", "2BSCS-1_CCS213-18_Enrolled.csv",
@@ -90,6 +91,7 @@ public class ExamSeatingModel {
             String filePath = directoryPath + "\\" + file;
             String courseCode = file.split("_")[1].toUpperCase();
             List<String> enrolledStudents = new ArrayList<>();
+            enrolledStudents.clear();
 
             try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
                 String line;
@@ -206,14 +208,6 @@ public class ExamSeatingModel {
 
         seatingStrategy.assignSeats(enrolledStudents, availableSeats, exam);
     }
-
- /*   public void clearList(){
-        students.clear();
-        exams.clear();
-        seats.clear();
-        enrolledStudents.clear();
-        courseEnrollments.clear();
-    }*/
 
     public List<Exam> getExams() {
         return exams;
