@@ -23,8 +23,8 @@ public class UpdateStudentList{
 
         StudentInput input = getStudentInput();
         StringBuilder stb = new StringBuilder();
-        stb.append(input.id).append(", ").append(input.name).append(", ")
-                .append(input.type).append(", ").append(input.programCode);
+        stb.append(input.getId()).append(", ").append(input.getName()).append(", ")
+                .append(input.getType()).append(", ").append(input.getProgramCode());
 
         switch (choice) {
             case "1":
@@ -184,7 +184,6 @@ public class UpdateStudentList{
     public void reloadData(){
         try {
             String directoryPath = "C:\\Users\\Zarra\\IdeaProjects\\OOPFinalProject\\OOPFinalProject\\src\\examseatingsystem\\resources";
-            //model.clearList();
             model.loadStudents(directoryPath + "\\2BSCS-1_StudentsList.csv");
             model.loadStudents(directoryPath + "\\2BSCS-2_StudentsList.csv");
             model.loadCourses(directoryPath + "\\Courses.csv");
