@@ -1,7 +1,6 @@
 .root {
     -fx-font-family: "Segoe UI";
 }
-
 .button {
     -fx-background-color: linear-gradient(to bottom, #42A5F5, #1E88E5);
     -fx-text-fill: #E4E7EB;
@@ -27,8 +26,6 @@
     -fx-scale-y: 0.95;
     -fx-scale-x: 0.95;
 }
-
-/* Destructive button style (unchanged) */
 .button-destructive {
     -fx-background-color: linear-gradient(to bottom, #EF5350, #E53935);
     -fx-text-fill: #E4E7EB;
@@ -54,8 +51,6 @@
     -fx-scale-y: 0.95;
     -fx-scale-x: 0.95;
 }
-
-/* Dialog buttons (OK) */
 .dialog-pane .button {
     -fx-background-color: linear-gradient(to bottom, #42A5F5, #1E88E5);
     -fx-text-fill: #E4E7EB;
@@ -75,7 +70,6 @@
     -fx-background-color: linear-gradient(to bottom, #1E88E5, #1976D2);
 }
 
-/* Cancel button in dialogs */
 .dialog-pane .button-cancel {
     -fx-background-color: linear-gradient(to bottom, #78909C, #607D8B);
     -fx-text-fill: #E4E7EB;
@@ -95,7 +89,46 @@
     -fx-background-color: linear-gradient(to bottom, #607D8B, #546E7A);
 }
 
-/* Table styling for dark mode */
+.tab-pane {
+    -fx-background-color: #2C2F33; /* Matches the UI background */
+    -fx-border-color: #4B4F55;
+    -fx-border-width: 0 0 1 0; /* Subtle border below tabs */
+}
+
+.tab-pane .tab-header-background {
+    -fx-background-color: #2C2F33; /* Matches the UI background */
+}
+
+.tab-pane .tab {
+    -fx-background-color: #34373C; /* Dark gray for unselected tabs */
+    -fx-background-radius: 5 5 0 0;
+    -fx-border-color: #4B4F55;
+    -fx-border-width: 1 1 0 1;
+    -fx-padding: 5 15 5 15;
+}
+
+.tab-pane .tab:selected {
+    -fx-background-color: #4B4F55; /* Lighter gray for selected tab */
+    -fx-border-color: #4B4F55;
+    -fx-border-width: 1 1 0 1;
+}
+
+.tab-pane .tab:hover {
+    -fx-background-color: #5C6168; /* Slightly lighter on hover */
+}
+
+.tab-pane .tab-label {
+    -fx-text-fill: #FFFFFF; /* White text for visibility */
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 2, 0, 1, 1);
+}
+
+.tab-pane .tab:focused {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
 .table-view {
     -fx-background-color: #000000;
     -fx-border-color: #4B4F55;
@@ -183,18 +216,17 @@
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 2, 0, 1, 1);
 }
 
-/* Secondary labels (description, footer) */
+
 .label.secondary {
     -fx-text-fill: #B0BEC5;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 2, 0, 1, 1);
 }
 
-/* Validation styling for text fields */
+
 .text-field:invalid {
     -fx-border-color: #EF5350;
 }
 
-/* TextField styling */
 .text-field {
     -fx-background-color: #3C4044;
     -fx-text-fill: #FFFFFF;
@@ -203,7 +235,7 @@
     -fx-border-radius: 5;
 }
 
-/* ComboBox styling */
+
 .combo-box {
     -fx-background-color: #3C4044;
     -fx-text-fill: #FFFFFF;
@@ -229,7 +261,7 @@
     -fx-background-color: #4B4F55;
 }
 
-/* Dialog pane styling */
+
 .dialog-pane {
     -fx-background-color: #34373C;
 }
@@ -323,5 +355,30 @@
 }
 
 .high-contrast .dialog-pane .header-panel .label {
+    -fx-text-fill: #FFFFFF;
+}
+
+/* High-contrast mode for tabs */
+.high-contrast .tab-pane {
+    -fx-background-color: #1C2526;
+}
+
+.high-contrast .tab-pane .tab-header-background {
+    -fx-background-color: #1C2526;
+}
+
+.high-contrast .tab-pane .tab {
+    -fx-background-color: #34373C;
+}
+
+.high-contrast .tab-pane .tab:selected {
+    -fx-background-color: #5C6168;
+}
+
+.high-contrast .tab-pane .tab:hover {
+    -fx-background-color: #6B7280;
+}
+
+.high-contrast .tab-pane .tab-label {
     -fx-text-fill: #FFFFFF;
 }
