@@ -262,7 +262,7 @@ public class MainController implements Initializable {
 
         // Assign rooms
         roomAssignments.clear();
-        int roomCounter = 1;
+        int roomCounter = 200;
 
         for (Map.Entry<String, List<Student>> entry : groupedStudents.entrySet()) {
             List<Student> studentGroup = entry.getValue();
@@ -573,7 +573,7 @@ public class MainController implements Initializable {
         helpAlert.setHeaderText("Exam Seating Arrangement System - Help");
 
         String helpContent =
-                        "1. Load CSV File: (CSV format: Course Code| Course Name| Exam Date/Time| Student ID | Student Name| Section)  \n\n" +
+                "1. Load CSV File: (CSV format: Course Code| Course Name| Exam Date/Time| Student ID | Student Name| Section)  \n\n" +
                         "2. Max Students per Room: Set the maximum number of students allowed in each room.\n\n" +
                         "3. Sort by: Choose how to group students (by Course Code, Exam Date/Time, or Section).\n\n" +
                         "4. Assign Rooms: Generate room assignments based on your settings.\n\n" +
@@ -608,13 +608,50 @@ public class MainController implements Initializable {
         ObservableList<RoomAssignment> roomData = FXCollections.observableArrayList(roomAssignments);
         roomTable.setItems(roomData);
     }
-
+    @FXML
     private void showSeatMap(RoomAssignment roomAssignment) {
+        if (roomAssignment == null) {
+            showAlert(Alert.AlertType.ERROR, "Error", "No Data",
+                    "Room assignment is null.");
+            return;
+        }
+
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/examseatingarangementfinal/seat_map.fxml"));
+            // Load the FXML file using a more reliable approach
+            FXMLLoader loader = new FXMLLoader();
+            // Try multiple paths to find the resource
+            URL fxmlUrl = null;
+
+            // Option 1: Try from class resources
+            fxmlUrl = getClass().getResource("/com/example/examseatingarangementfinal/seat_map.fxml");
+
+            // Option 2: Try from root resources
+            if (fxmlUrl == null) {
+                fxmlUrl = getClass().getResource("/seat_map.fxml");
+            }
+
+            // Option 3: Try from class loader
+            if (fxmlUrl == null) {
+                fxmlUrl = getClass().getClassLoader().getResource("com/example/examseatingarangementfinal/seat_map.fxml");
+            }
+
+            // Option 4: Try from class loader with different path
+            if (fxmlUrl == null) {
+                fxmlUrl = getClass().getClassLoader().getResource("seat_map.fxml");
+            }
+
+
+
+            loader.setLocation(fxmlUrl);
             Parent root = loader.load();
 
             SeatMapController controller = loader.getController();
+            if (controller == null) {
+                showAlert(Alert.AlertType.ERROR, "Error", "Controller Error",
+                        "Could not get SeatMapController from FXML.");
+                return;
+            }
+
             controller.setRoomAssignment(roomAssignment);
 
             Stage stage = new Stage();
@@ -625,8 +662,13 @@ public class MainController implements Initializable {
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Error", "Cannot Load Seat Map",
+            showAlert(Alert.AlertType.ERROR, "Loading Error", "Cannot Load Seat Map",
                     "Failed to load seat map: " + e.getMessage());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "General Error", "Error Creating Seat Map",
+                    "Unexpected error: " + e.getMessage());
         }
     }
 
