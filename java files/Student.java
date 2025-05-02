@@ -23,27 +23,24 @@ public class Student {
 
     public String getCourseCode() { return courseCode.get(); }
     public StringProperty courseCodeProperty() { return courseCode; }
-    public void setCourseCode(String courseCode) { this.courseCode.set(courseCode); }
+
 
     public String getCourseName() { return courseName.get(); }
     public StringProperty courseNameProperty() { return courseName; }
-    public void setCourseName(String courseName) { this.courseName.set(courseName); }
 
     public String getExamDateTime() { return examDateTime.get(); }
     public StringProperty examDateTimeProperty() { return examDateTime; }
-    public void setExamDateTime(String examDateTime) { this.examDateTime.set(examDateTime); }
 
     public String getStudentId() { return studentId.get(); }
     public StringProperty studentIdProperty() { return studentId; }
-    public void setStudentId(String studentId) { this.studentId.set(studentId); }
+
 
     public String getStudentName() { return studentName.get(); }
     public StringProperty studentNameProperty() { return studentName; }
-    public void setStudentName(String studentName) { this.studentName.set(studentName); }
 
     public String getSection() { return section.get(); }
     public StringProperty sectionProperty() { return section; }
-    public void setSection(String section) { this.section.set(section); }
+
 
     @Override
     public String toString() {
