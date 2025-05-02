@@ -19,8 +19,7 @@ public class AddStudentController implements Initializable {
     @FXML private TextField studentIdField;
     @FXML private TextField studentNameField;
     @FXML private TextField sectionField;
-    @FXML private Button saveButton;
-    @FXML private Button cancelButton;
+
 
     private Student result;
 
@@ -42,12 +41,6 @@ public class AddStudentController implements Initializable {
             );
             closeWindow(event);
         }
-    }
-
-    @FXML
-    private void handleCancel(ActionEvent event) {
-        result = null;
-        closeWindow(event);
     }
 
     private void closeWindow(ActionEvent event) {
@@ -91,9 +84,5 @@ public class AddStudentController implements Initializable {
         alert.setHeaderText(header);
         alert.setContentText(content);
         alert.showAndWait();
-    }
-
-    public Student getResult() {
-        return result;
     }
 }
