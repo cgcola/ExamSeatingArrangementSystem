@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.examseatingarangementfinal.MainController">
+    <top>
+        <VBox spacing="10">
+            <HBox alignment="CENTER_LEFT" spacing="10">
+                <padding>
+                    <Insets bottom="10" left="10" right="10" top="10" />
+                </padding>
+                <Button onAction="#loadCSVFile" text="Load CSV File" />
+                <Label text="Max Students per Room:" />
+                <TextField fx:id="maxStudentsPerRoomField" prefWidth="50.0" text="30" />
+                <Label text="Sort by:" />
+                <ComboBox fx:id="sortComboBox" prefWidth="150.0" />
+                <Button onAction="#assignRooms" text="Assign Rooms"  />
+                <Button onAction="#printRoomAssignments" text="Print Room Assignments" />
+                <Pane HBox.hgrow="ALWAYS" />
+                <Button onAction="#showHelpDialog" text="Help" />
+                <Button onAction="#exit" text="Exit" />
+            </HBox>
+            <HBox alignment="CENTER_LEFT" spacing="10">
+                <padding>
+                    <Insets bottom="10" left="10" right="10" top="10" />
+                </padding>
+                <Label text="Search:" />
+                <TextField fx:id="searchField" promptText="Search by ID, name, course..." HBox.hgrow="ALWAYS" />
+                <Button onAction="#exportStudentCSV" text="Export Students" />
+                <Button onAction="#exportRoomAssignmentsCSV" text="Export Rooms" />
+                <Button onAction="#clearAllStudents" text="Clear All" />
+            </HBox>
+        </VBox>
+    </top>
+    <center>
+        <TabPane>
+            <Tab closable="false" text="Student Data">
+                <BorderPane>
+                    <center>
+                        <TableView fx:id="studentTable">
+                            <columns>
+                                <TableColumn fx:id="courseCodeCol" prefWidth="100.0" text="Course Code" />
+                                <TableColumn fx:id="courseNameCol" prefWidth="200.0" text="Course Name" />
+                                <TableColumn fx:id="examDateTimeCol" prefWidth="150.0" text="Exam Date/Time" />
+                                <TableColumn fx:id="studentIdCol" prefWidth="100.0" text="Student ID" />
+                                <TableColumn fx:id="studentNameCol" prefWidth="200.0" text="Student Name" />
+                                <TableColumn fx:id="sectionCol" prefWidth="80.0" text="Section" />
+                            </columns>
+                            <columnResizePolicy>
+                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                            </columnResizePolicy>
+                        </TableView>
+                    </center>
+                    <bottom>
+                        <HBox spacing="10">
+                            <padding>
+                                <Insets bottom="10" left="10" right="10" top="10" />
+                            </padding>
+                            <Button onAction="#showAddStudentDialog" text="Add Student" />
+                            <Button onAction="#editSelectedStudent" text="Edit Student" />
+                            <Button onAction="#deleteSelectedStudent" text="Delete Student" />
+                        </HBox>
+                    </bottom>
+                </BorderPane>
+            </Tab>
+            <Tab closable="false" text="Room Assignments">
+                <BorderPane>
+                    <center>
+                        <TableView fx:id="roomTable">
+                            <columns>
+                                <TableColumn fx:id="roomNumberCol" prefWidth="100.0" text="Room Number" />
+                                <TableColumn fx:id="roomCourseCodeCol" prefWidth="100.0" text="Course Code" />
+                                <TableColumn fx:id="roomExamDateTimeCol" prefWidth="150.0" text="Exam Date/Time" />
+                                <TableColumn fx:id="roomSectionCol" prefWidth="80.0" text="Section" />
+                                <TableColumn fx:id="studentsCol" prefWidth="80.0" text="Students" />
+                                <TableColumn fx:id="seatMapCol" prefWidth="100.0" text="Seat Map" />
+                            </columns>
+                            <columnResizePolicy>
+                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                            </columnResizePolicy>
+                        </TableView>
+                    </center>
+                </BorderPane>
+            </Tab>
+        </TabPane>
+    </center>
+    <bottom>
+        <HBox alignment="CENTER_RIGHT">
+            <padding>
+                <Insets bottom="5" left="5" right="5" top="5" />
+            </padding>
+            <Label text="Grupo ni Angelyn v1" />
+        </HBox>
+    </bottom>
+</BorderPane>
