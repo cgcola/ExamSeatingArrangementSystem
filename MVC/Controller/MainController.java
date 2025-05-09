@@ -1,6 +1,6 @@
 package Controller;
 
-import Model.ExamSeatingServiceModel;
+import Model.ExamSeatingModel;
 import Model.SeatMapModel;
 import Model.StudentModel;
 import View.HelpPopUpView;
@@ -23,7 +23,7 @@ import java.io.*;
 import java.net.URL;
 import java.util.*;
 
-public class MainController implements Initializable {
+public class    MainController implements Initializable {
 
     @FXML private TextField maxStudentsPerRoomField;
     @FXML private ComboBox<String> sortComboBox;
@@ -38,7 +38,7 @@ public class MainController implements Initializable {
     private List<StudentModel> students = new ArrayList<>();
     private List<StudentModel> filteredStudents = new ArrayList<>();
     private List<SeatMapModel> roomAssignments = new ArrayList<>();
-    private ExamSeatingServiceModel examService = new ExamSeatingServiceModel();
+    private ExamSeatingModel examService = new ExamSeatingModel();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -148,7 +148,7 @@ public class MainController implements Initializable {
     private void exportRoomAssignmentsCSV() {
         if (checkEmptyData(roomAssignments, "export", "room assignments")) return;
 
-        if (ExamSeatingServiceModel.exportRoomAssignments(getStage(), roomAssignments)) {
+        if (ExamSeatingModel.exportRoomAssignments(getStage(), roomAssignments)) {
             HelpPopUpView.showAlert(Alert.AlertType.INFORMATION, "Success", "Export Successful",
                     "Room assignments have been exported successfully.");
         }
@@ -176,7 +176,7 @@ public class MainController implements Initializable {
 
     @FXML
     private void showAddStudentDialog() {
-        createStudentDialog("Add New Student", null).showAndWait().ifPresent(student -> {
+        HelpPopUpView.createStudentDialog("Add New Student", null).showAndWait().ifPresent(student -> {
             students.add(student);
             updateFilteredStudents(searchField.getText());
         });
@@ -191,7 +191,7 @@ public class MainController implements Initializable {
             return;
         }
 
-        createStudentDialog("Edit Student", selected).showAndWait().ifPresent(updated -> {
+        HelpPopUpView.createStudentDialog("Edit Student", selected).showAndWait().ifPresent(updated -> {
             students.set(students.indexOf(selected), updated);
             updateFilteredStudents(searchField.getText());
         });
@@ -241,7 +241,7 @@ public class MainController implements Initializable {
             return;
         }
 
-        if (job.showPrintDialog(getStage()) && job.printPage(createPrintContent())) {
+        if (job.showPrintDialog(getStage()) && job.printPage(HelpPopUpView.createPrintContent(roomAssignments))) {
             job.endJob();
             HelpPopUpView.showAlert(Alert.AlertType.INFORMATION, "Print Successful",
                     "Room Assignments Printed", "Room assignments have been sent to the printer.");
@@ -294,53 +294,6 @@ public class MainController implements Initializable {
         }
     }
 
-    private Dialog<StudentModel> createStudentDialog(String title, StudentModel student) {
-        Dialog<StudentModel> dialog = new Dialog<>();
-        dialog.setTitle(title);
-        dialog.setHeaderText(title.replace("Student", "student information"));
-
-        ButtonType actionBtn = new ButtonType(student == null ? "Add" : "Save", ButtonBar.ButtonData.OK_DONE);
-        dialog.getDialogPane().getButtonTypes().addAll(actionBtn, ButtonType.CANCEL);
-
-        GridPane grid = new GridPane();
-        grid.setHgap(10);
-        grid.setVgap(10);
-        grid.setPadding(new Insets(20, 150, 10, 10));
-
-        String[] labels = {"Course Code:", "Course Name:", "Exam Date/Time:",
-                "Student ID:", "Student Name:", "Section:"};
-        String[] values = student != null ?
-                new String[]{student.getCourseCode(), student.getCourseName(), student.getExamDateTime(),
-                        student.getStudentId(), student.getStudentName(), student.getSection()} :
-                new String[]{"", "", "", "", "", ""};
-
-        TextField[] fields = new TextField[6];
-        for (int i = 0; i < labels.length; i++) {
-            grid.add(new Label(labels[i]), 0, i);
-            fields[i] = new TextField(values[i]);
-            grid.add(fields[i], 1, i);
-        }
-
-        dialog.getDialogPane().setContent(grid);
-        Platform.runLater(() -> fields[0].requestFocus());
-
-        dialog.setResultConverter(buttonType -> {
-            if (buttonType == actionBtn) {
-                return new StudentModel(
-                        fields[0].getText().trim(), // Course Code
-                        fields[1].getText().trim(), // Course Name
-                        fields[2].getText().trim(), // Exam Date/Time
-                        fields[3].getText().trim(), // Student ID
-                        fields[4].getText().trim(), // Student Name
-                        fields[5].getText().trim()  // Section
-                );
-            }
-            return null;
-        });
-
-        return dialog;
-    }
-
     private int parseMaxStudents() {
         try {
             int value = Integer.parseInt(maxStudentsPerRoomField.getText().trim());
@@ -354,56 +307,5 @@ public class MainController implements Initializable {
                     "Please enter a valid positive number for max students per room.");
             return -1;
         }
-    }
-
-    private VBox createPrintContent() {
-        VBox content = new VBox(10);
-        content.setPadding(new Insets(20));
-
-        Label title = new Label("Room Assignments Report");
-        title.setStyle("-fx-font-weight: bold; -fx-font-size: 16px;");
-        content.getChildren().addAll(
-                title,
-                new Label("Generated on: " + java.time.LocalDate.now()),
-                new Separator()
-        );
-
-        Map<String, List<SeatMapModel>> roomGroups = new HashMap<>();
-        for (SeatMapModel room : roomAssignments) {
-            String key = room.getCourseCode() + " - " + room.getSection();
-            roomGroups.computeIfAbsent(key, k -> new ArrayList<>()).add(room);
-        }
-
-        for (Map.Entry<String, List<SeatMapModel>> entry : roomGroups.entrySet()) {
-            VBox groupBox = new VBox(7);
-            groupBox.setPadding(new Insets(10, 0, 10, 0));
-
-            Label groupLabel = new Label(entry.getKey());
-            groupLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
-            groupBox.getChildren().add(groupLabel);
-
-            for (SeatMapModel room : entry.getValue()) {
-                groupBox.getChildren().add(new Label(String.format(
-                        "Room: %s - Exam: %s - Students: %s",
-                        room.getRoomNumber(), room.getExamDateTime(), room.getStudentCount())));
-
-                // Add student list (only for smaller groups)
-                if (room.getStudents().size() <= 10) {
-                    VBox studentBox = new VBox(2);
-                    studentBox.setPadding(new Insets(0, 0, 0, 20));
-
-                    for (StudentModel student : room.getStudents()) {
-                        studentBox.getChildren().add(new Label(
-                                student.getStudentId() + " - " + student.getStudentName()));
-                    }
-                    groupBox.getChildren().add(studentBox);
-                }
-            }
-
-            groupBox.getChildren().add(new Separator());
-            content.getChildren().add(groupBox);
-        }
-
-        return content;
     }
 }
