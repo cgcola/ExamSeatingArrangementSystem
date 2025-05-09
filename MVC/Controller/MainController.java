@@ -1,12 +1,15 @@
-package com.example.examseatingarangementfinal;
+package Controller;
 
+import Model.ExamSeatingServiceModel;
+import Model.SeatMapModel;
+import Model.StudentModel;
+import View.HelpPopUpView;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.print.PrinterJob;
-import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -16,8 +19,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.geometry.Insets;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.URL;
 import java.util.*;
 
@@ -27,19 +29,11 @@ public class MainController implements Initializable {
     @FXML private ComboBox<String> sortComboBox;
     @FXML private TextField searchField;
     @FXML private TableView<StudentModel> studentTable;
-    @FXML private TableColumn<StudentModel, String> courseCodeCol;
-    @FXML private TableColumn<StudentModel, String> courseNameCol;
-    @FXML private TableColumn<StudentModel, String> examDateTimeCol;
-    @FXML private TableColumn<StudentModel, String> studentIdCol;
-    @FXML private TableColumn<StudentModel, String> studentNameCol;
-    @FXML private TableColumn<StudentModel, String> sectionCol;
+    @FXML private TableColumn<StudentModel, String> courseCodeCol, courseNameCol, examDateTimeCol,
+            studentIdCol, studentNameCol, sectionCol;
     @FXML private TableView<SeatMapModel> roomTable;
-    @FXML private TableColumn<SeatMapModel, String> roomNumberCol;
-    @FXML private TableColumn<SeatMapModel, String> roomCourseCodeCol;
-    @FXML private TableColumn<SeatMapModel, String> roomExamDateTimeCol;
-    @FXML private TableColumn<SeatMapModel, String> roomSectionCol;
-    @FXML private TableColumn<SeatMapModel, String> studentsCol;
-    @FXML private TableColumn<SeatMapModel, String> seatMapCol;
+    @FXML private TableColumn<SeatMapModel, String> roomNumberCol, roomCourseCodeCol, roomExamDateTimeCol,
+            roomSectionCol, studentsCol, seatMapCol;
 
     private List<StudentModel> students = new ArrayList<>();
     private List<StudentModel> filteredStudents = new ArrayList<>();
@@ -48,24 +42,16 @@ public class MainController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        initializeUIComponents();
-        searchField.textProperty().addListener((observable, oldValue, newValue) ->
-                updateFilteredStudents(newValue));
-        maxStudentsPerRoomField.setText("30");
-    }
-
-    private void initializeUIComponents() {
-        // Initialize sortComboBox
-        sortComboBox.setItems(FXCollections.observableArrayList(
-                "Course Code", "Exam Date/Time", "Section"));
+        // Initialize UI components
+        sortComboBox.setItems(FXCollections.observableArrayList("Course Code", "Exam Date/Time", "Section"));
         sortComboBox.setValue("Course Code");
 
         // Initialize table columns
         initializeTableColumns();
 
-        // Setup seat map view button
+        // Add view button to seat map column
         seatMapCol.setCellFactory(param -> new TableCell<SeatMapModel, String>() {
-            private final Button seatMapButton = new Button("View");
+            private final Button viewBtn = new Button("View");
 
             @Override
             protected void updateItem(String item, boolean empty) {
@@ -73,162 +59,124 @@ public class MainController implements Initializable {
                 if (empty) {
                     setGraphic(null);
                 } else {
-                    setGraphic(seatMapButton);
-                    seatMapButton.setOnAction(event -> {
-                        SeatMapModel roomAssignment = getTableView().getItems().get(getIndex());
-                        showSeatMap(roomAssignment);
-                    });
+                    setGraphic(viewBtn);
+                    viewBtn.setOnAction(e -> showSeatMap(getTableView().getItems().get(getIndex())));
                 }
             }
         });
+
+        // Setup search field listener
+        searchField.textProperty().addListener((observable, oldValue, newValue) ->
+                updateFilteredStudents(newValue));
+
+        maxStudentsPerRoomField.setText("30");
     }
 
     private void initializeTableColumns() {
         // Student table
-        courseCodeCol.setCellValueFactory(cellData -> cellData.getValue().courseCodeProperty());
-        courseNameCol.setCellValueFactory(cellData -> cellData.getValue().courseNameProperty());
-        examDateTimeCol.setCellValueFactory(cellData -> cellData.getValue().examDateTimeProperty());
-        studentIdCol.setCellValueFactory(cellData -> cellData.getValue().studentIdProperty());
-        studentNameCol.setCellValueFactory(cellData -> cellData.getValue().studentNameProperty());
-        sectionCol.setCellValueFactory(cellData -> cellData.getValue().sectionProperty());
+        courseCodeCol.setCellValueFactory(cell -> cell.getValue().courseCodeProperty());
+        courseNameCol.setCellValueFactory(cell -> cell.getValue().courseNameProperty());
+        examDateTimeCol.setCellValueFactory(cell -> cell.getValue().examDateTimeProperty());
+        studentIdCol.setCellValueFactory(cell -> cell.getValue().studentIdProperty());
+        studentNameCol.setCellValueFactory(cell -> cell.getValue().studentNameProperty());
+        sectionCol.setCellValueFactory(cell -> cell.getValue().sectionProperty());
 
         // Room table
-        roomNumberCol.setCellValueFactory(cellData -> cellData.getValue().roomNumberProperty());
-        roomCourseCodeCol.setCellValueFactory(cellData -> cellData.getValue().courseCodeProperty());
-        roomExamDateTimeCol.setCellValueFactory(cellData -> cellData.getValue().examDateTimeProperty());
-        roomSectionCol.setCellValueFactory(cellData -> cellData.getValue().sectionProperty());
-        studentsCol.setCellValueFactory(cellData -> cellData.getValue().studentCountProperty());
+        roomNumberCol.setCellValueFactory(cell -> cell.getValue().roomNumberProperty());
+        roomCourseCodeCol.setCellValueFactory(cell -> cell.getValue().courseCodeProperty());
+        roomExamDateTimeCol.setCellValueFactory(cell -> cell.getValue().examDateTimeProperty());
+        roomSectionCol.setCellValueFactory(cell -> cell.getValue().sectionProperty());
+        studentsCol.setCellValueFactory(cell -> cell.getValue().studentCountProperty());
     }
 
     private void updateFilteredStudents(String searchText) {
         filteredStudents = examService.filterStudents(students, searchText);
-        updateStudentTable();
+        studentTable.setItems(FXCollections.observableArrayList(filteredStudents));
     }
 
     @FXML
     private void loadCSVFile() {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Open CSV File");
-        fileChooser.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Open CSV File");
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
 
-        File file = fileChooser.showOpenDialog(getStage());
-        if (file == null) return;
-
-        try {
-            students = examService.loadStudentsFromCSV(file);
-            filteredStudents = new ArrayList<>(students);
-            updateStudentTable();
-            HelpPopUpView.showAlert(Alert.AlertType.INFORMATION,
-                    "Success", "CSV File Loaded",
-                    "Successfully loaded " + students.size() + " student records.");
-        } catch (IOException e) {
-            HelpPopUpView.showAlert(Alert.AlertType.ERROR,
-                    "Error", "Error Reading File",
-                    "An error occurred while reading the file: " + e.getMessage());
+        File file = chooser.showOpenDialog(getStage());
+        if (file != null) {
+            try {
+                students = examService.loadStudentsFromCSV(file);
+                filteredStudents = new ArrayList<>(students);
+                updateFilteredStudents("");
+                HelpPopUpView.showAlert(Alert.AlertType.INFORMATION, "Success", "CSV File Loaded",
+                        "Successfully loaded " + students.size() + " student records.");
+            } catch (IOException e) {
+                HelpPopUpView.showAlert(Alert.AlertType.ERROR, "Error", "Error Reading File",
+                        "An error occurred: " + e.getMessage());
+            }
         }
     }
 
     @FXML
     private void exportStudentCSV() {
-        if (checkIfStudentsEmpty("export")) return;
+        if (checkEmptyData(students, "export", "students")) return;
 
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Export Student Data");
-        fileChooser.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
-        fileChooser.setInitialFileName("students.csv");
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Export Student Data");
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
+        chooser.setInitialFileName("students.csv");
 
-        File file = fileChooser.showSaveDialog(getStage());
-        if (file == null) return;
+        File file = chooser.showSaveDialog(getStage());
+        if (file != null) {
+            try (PrintWriter writer = new PrintWriter(new FileWriter(file))) {
+                writer.println("Course Code,Course Name,Exam Date/Time,Student ID,Student Name,Section");
 
-        try (java.io.PrintWriter writer = new java.io.PrintWriter(new java.io.FileWriter(file))) {
-            // Write header
-            writer.println("Course Code,Course Name,Exam Date/Time,Student ID,Student Name,Section");
+                for (StudentModel student : students) {
+                    writer.println(String.format("%s,%s,%s,%s,%s,%s",
+                            student.getCourseCode(), student.getCourseName(), student.getExamDateTime(),
+                            student.getStudentId(), student.getStudentName(), student.getSection()));
+                }
 
-            // Write data
-            for (StudentModel student : students) {
-                writer.println(
-                        student.getCourseCode() + "," +
-                                student.getCourseName() + "," +
-                                student.getExamDateTime() + "," +
-                                student.getStudentId() + "," +
-                                student.getStudentName() + "," +
-                                student.getSection()
-                );
+                HelpPopUpView.showAlert(Alert.AlertType.INFORMATION, "Success", "Export Successful",
+                        "Student data has been exported successfully.");
+            } catch (IOException e) {
+                HelpPopUpView.showAlert(Alert.AlertType.ERROR, "Error", "Export Failed",
+                        "Failed to export: " + e.getMessage());
             }
-
-            HelpPopUpView.showAlert(Alert.AlertType.INFORMATION,
-                    "Success", "Export Successful",
-                    "Student data has been exported successfully.");
-        } catch (IOException e) {
-            HelpPopUpView.showAlert(Alert.AlertType.ERROR,
-                    "Error", "Export Failed",
-                    "Failed to export student data: " + e.getMessage());
         }
     }
 
     @FXML
     private void exportRoomAssignmentsCSV() {
-        if (checkIfRoomsEmpty("export")) return;
+        if (checkEmptyData(roomAssignments, "export", "room assignments")) return;
 
-        boolean success = ExamSeatingServiceModel.exportRoomAssignments(getStage(), roomAssignments);
-
-        if (success) {
-            HelpPopUpView.showAlert(Alert.AlertType.INFORMATION,
-                    "Success", "Export Successful",
+        if (ExamSeatingServiceModel.exportRoomAssignments(getStage(), roomAssignments)) {
+            HelpPopUpView.showAlert(Alert.AlertType.INFORMATION, "Success", "Export Successful",
                     "Room assignments have been exported successfully.");
         }
     }
 
     @FXML
     private void assignRooms() {
-        if (checkIfStudentsEmpty("assign rooms to")) return;
+        if (checkEmptyData(students, "assign rooms to", "students")) return;
 
         try {
             int maxStudentsPerRoom = parseMaxStudents();
             if (maxStudentsPerRoom <= 0) return;
 
             String sortCriteria = sortComboBox.getValue();
-            if (sortCriteria == null || sortCriteria.isEmpty()) {
-                sortCriteria = "Course Code"; // Default value
-            }
-
             roomAssignments = examService.assignRooms(students, sortCriteria, maxStudentsPerRoom);
-            updateRoomTable();
+            roomTable.setItems(FXCollections.observableArrayList(roomAssignments));
 
-            HelpPopUpView.showAlert(Alert.AlertType.INFORMATION,
-                    "Success", "Rooms Assigned",
+            HelpPopUpView.showAlert(Alert.AlertType.INFORMATION, "Success", "Rooms Assigned",
                     "Successfully assigned " + roomAssignments.size() + " rooms.");
         } catch (Exception e) {
-            HelpPopUpView.showAlert(Alert.AlertType.ERROR,
-                    "Error", "Assignment Failed",
-                    "An error occurred while assigning rooms: " + e.getMessage());
-        }
-    }
-
-    private int parseMaxStudents() {
-        try {
-            int value = Integer.parseInt(maxStudentsPerRoomField.getText().trim());
-            if (value <= 0) {
-                HelpPopUpView.showAlert(Alert.AlertType.ERROR,
-                        "Error", "Invalid Input",
-                        "Please enter a valid positive number for max students per room.");
-            }
-            return value;
-        } catch (NumberFormatException e) {
-            HelpPopUpView.showAlert(Alert.AlertType.ERROR,
-                    "Error", "Invalid Input",
-                    "Please enter a valid positive number for max students per room.");
-            return -1;
+            HelpPopUpView.showAlert(Alert.AlertType.ERROR, "Error", "Assignment Failed",
+                    "Error assigning rooms: " + e.getMessage());
         }
     }
 
     @FXML
     private void showAddStudentDialog() {
-        Dialog<StudentModel> dialog = createStudentDialog("Add New Student", null);
-
-        dialog.showAndWait().ifPresent(student -> {
+        createStudentDialog("Add New Student", null).showAndWait().ifPresent(student -> {
             students.add(student);
             updateFilteredStudents(searchField.getText());
         });
@@ -236,66 +184,32 @@ public class MainController implements Initializable {
 
     @FXML
     private void editSelectedStudent() {
-        StudentModel selectedStudent = studentTable.getSelectionModel().getSelectedItem();
-        if (selectedStudent == null) {
-            HelpPopUpView.showAlert(Alert.AlertType.WARNING,
-                    "No Selection", "No Student Selected",
+        StudentModel selected = studentTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            HelpPopUpView.showAlert(Alert.AlertType.WARNING, "No Selection", "No Student Selected",
                     "Please select a student to edit.");
             return;
         }
 
-        Dialog<StudentModel> dialog = createStudentDialog("Edit Student", selectedStudent);
-
-        dialog.showAndWait().ifPresent(updatedStudent -> {
-            int index = students.indexOf(selectedStudent);
-            students.set(index, updatedStudent);
+        createStudentDialog("Edit Student", selected).showAndWait().ifPresent(updated -> {
+            students.set(students.indexOf(selected), updated);
             updateFilteredStudents(searchField.getText());
         });
     }
 
-    private Dialog<StudentModel> createStudentDialog(String title, StudentModel student) {
-        Dialog<StudentModel> dialog = new Dialog<>();
-        dialog.setTitle(title);
-        dialog.setHeaderText(title.replace("Student", "student information"));
-
-        ButtonType actionButtonType = new ButtonType(
-                student == null ? "Add" : "Save",
-                ButtonBar.ButtonData.OK_DONE);
-        dialog.getDialogPane().getButtonTypes().addAll(actionButtonType, ButtonType.CANCEL);
-
-        GridPane grid = createStudentFormGrid(student);
-        dialog.getDialogPane().setContent(grid);
-
-        Platform.runLater(() -> grid.getChildren().get(1).requestFocus());
-
-        dialog.setResultConverter(dialogButton -> {
-            if (dialogButton == actionButtonType) {
-                return extractStudentFromGrid(grid);
-            }
-            return null;
-        });
-
-        return dialog;
-    }
-
     @FXML
     private void deleteSelectedStudent() {
-        StudentModel selectedStudent = studentTable.getSelectionModel().getSelectedItem();
-        if (selectedStudent == null) {
-            HelpPopUpView.showAlert(Alert.AlertType.WARNING,
-                    "No Selection", "No Student Selected",
+        StudentModel selected = studentTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            HelpPopUpView.showAlert(Alert.AlertType.WARNING, "No Selection", "No Student Selected",
                     "Please select a student to delete.");
             return;
         }
 
-        boolean confirmed = HelpPopUpView.showConfirmation(
-                "Confirm Deletion", "Delete Student",
-                "Are you sure you want to delete this student?\n" +
-                        "ID: " + selectedStudent.getStudentId() + "\n" +
-                        "Name: " + selectedStudent.getStudentName());
-
-        if (confirmed) {
-            students.remove(selectedStudent);
+        if (HelpPopUpView.showConfirmation("Confirm Deletion", "Delete Student",
+                "Are you sure you want to delete this student?\nID: " + selected.getStudentId() +
+                        "\nName: " + selected.getStudentName())) {
+            students.remove(selected);
             updateFilteredStudents(searchField.getText());
         }
     }
@@ -303,72 +217,46 @@ public class MainController implements Initializable {
     @FXML
     private void clearAllStudents() {
         if (students.isEmpty()) {
-            HelpPopUpView.showAlert(Alert.AlertType.INFORMATION,
-                    "Information", "No Data",
+            HelpPopUpView.showAlert(Alert.AlertType.INFORMATION, "Information", "No Data",
                     "There are no students to clear.");
             return;
         }
 
-        boolean confirmed = HelpPopUpView.showConfirmation(
-                "Confirm Clear All", "Clear All Students",
-                "Are you sure you want to clear all student data? This action cannot be undone.");
-
-        if (confirmed) {
+        if (HelpPopUpView.showConfirmation("Confirm Clear All", "Clear All Students",
+                "Are you sure you want to clear all student data? This action cannot be undone.")) {
             students.clear();
             filteredStudents.clear();
-            updateStudentTable();
+            studentTable.setItems(FXCollections.observableArrayList(filteredStudents));
         }
     }
 
     @FXML
     private void printRoomAssignments() {
-        if (checkIfRoomsEmpty("print")) return;
+        if (checkEmptyData(roomAssignments, "print", "room assignments")) return;
 
         PrinterJob job = PrinterJob.createPrinterJob();
         if (job == null) {
-            HelpPopUpView.showAlert(Alert.AlertType.ERROR,
-                    "No Printer", "No Printer Available",
+            HelpPopUpView.showAlert(Alert.AlertType.ERROR, "No Printer", "No Printer Available",
                     "No printer was found.");
             return;
         }
 
-        if (job.showPrintDialog(getStage())) {
-            VBox printContent = createPrintContent();
-            if (job.printPage(printContent)) {
-                job.endJob();
-                HelpPopUpView.showAlert(Alert.AlertType.INFORMATION,
-                        "Print Successful", "Room Assignments Printed",
-                        "Room assignments have been sent to the printer.");
-            }
+        if (job.showPrintDialog(getStage()) && job.printPage(createPrintContent())) {
+            job.endJob();
+            HelpPopUpView.showAlert(Alert.AlertType.INFORMATION, "Print Successful",
+                    "Room Assignments Printed", "Room assignments have been sent to the printer.");
         }
     }
 
-    @FXML
-    private void showHelpDialog() {
-        HelpPopUpView.showHelpDialog();
-    }
+    @FXML private void showHelpDialog() { HelpPopUpView.showHelpDialog(); }
 
-    @FXML
-    private void exit() {
-        HelpPopUpView.exit();
-    }
+    @FXML private void exit() { HelpPopUpView.exit(); }
 
     // Helper methods
-    private boolean checkIfStudentsEmpty(String action) {
-        if (students.isEmpty()) {
-            HelpPopUpView.showAlert(Alert.AlertType.WARNING,
-                    "Warning", "No Data",
-                    "Please load a CSV file first to " + action + " students.");
-            return true;
-        }
-        return false;
-    }
-
-    private boolean checkIfRoomsEmpty(String action) {
-        if (roomAssignments.isEmpty()) {
-            HelpPopUpView.showAlert(Alert.AlertType.WARNING,
-                    "Warning", "No Data",
-                    "Please assign rooms first to " + action + " room assignments.");
+    private <T> boolean checkEmptyData(List<T> data, String action, String dataType) {
+        if (data.isEmpty()) {
+            HelpPopUpView.showAlert(Alert.AlertType.WARNING, "Warning", "No Data",
+                    "Please load data first to " + action + " " + dataType + ".");
             return true;
         }
         return false;
@@ -378,44 +266,27 @@ public class MainController implements Initializable {
         return (Stage) maxStudentsPerRoomField.getScene().getWindow();
     }
 
-    private void updateStudentTable() {
-        studentTable.setItems(FXCollections.observableArrayList(filteredStudents));
-        studentTable.refresh();
-    }
-
-    private void updateRoomTable() {
-        roomTable.setItems(FXCollections.observableArrayList(roomAssignments));
-        roomTable.refresh();
-    }
-
-    private void showSeatMap(SeatMapModel roomAssignment) {
-        if (roomAssignment == null) {
+    private void showSeatMap(SeatMapModel room) {
+        if (room == null) {
             HelpPopUpView.showAlert(Alert.AlertType.ERROR, "Error", "No Data",
                     "Room assignment is null.");
             return;
         }
 
         try {
-            FXMLLoader loader = new FXMLLoader();
-            URL fxmlUrl = getClass().getResource("/com/example/examseatingarangementfinal/SeatMapView.fxml");
-
-            if (fxmlUrl == null) {
-                HelpPopUpView.showAlert(Alert.AlertType.ERROR, "Error", "Resource Not Found",
-                        "Could not find SeatMapView.fxml resource.");
-                return;
-            }
-
-            loader.setLocation(fxmlUrl);
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(
+                    "/com/example/examseatingarangementfinal/SeatMapView.fxml"));
             Parent root = loader.load();
 
             SeatMapController controller = loader.getController();
-            controller.setRoomAssignment(roomAssignment);
+            controller.setRoomAssignment(room);
 
             Stage stage = new Stage();
-            stage.setTitle("Seat Map - " + roomAssignment.getRoomNumber());
+            stage.setTitle("Seat Map - " + room.getRoomNumber());
             stage.initModality(Modality.WINDOW_MODAL);
             stage.initOwner(getStage());
-            stage.setScene(new Scene(root, 800, 600));
+            stage.setScene(new Scene(root));
+            stage.setMaximized(true);
             stage.show();
         } catch (IOException e) {
             HelpPopUpView.showAlert(Alert.AlertType.ERROR, "Loading Error", "Cannot Load Seat Map",
@@ -423,7 +294,14 @@ public class MainController implements Initializable {
         }
     }
 
-    private GridPane createStudentFormGrid(StudentModel student) {
+    private Dialog<StudentModel> createStudentDialog(String title, StudentModel student) {
+        Dialog<StudentModel> dialog = new Dialog<>();
+        dialog.setTitle(title);
+        dialog.setHeaderText(title.replace("Student", "student information"));
+
+        ButtonType actionBtn = new ButtonType(student == null ? "Add" : "Save", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(actionBtn, ButtonType.CANCEL);
+
         GridPane grid = new GridPane();
         grid.setHgap(10);
         grid.setVgap(10);
@@ -432,98 +310,100 @@ public class MainController implements Initializable {
         String[] labels = {"Course Code:", "Course Name:", "Exam Date/Time:",
                 "Student ID:", "Student Name:", "Section:"};
         String[] values = student != null ?
-                new String[]{
-                        student.getCourseCode(),
-                        student.getCourseName(),
-                        student.getExamDateTime(),
-                        student.getStudentId(),
-                        student.getStudentName(),
-                        student.getSection()
-                } :
+                new String[]{student.getCourseCode(), student.getCourseName(), student.getExamDateTime(),
+                        student.getStudentId(), student.getStudentName(), student.getSection()} :
                 new String[]{"", "", "", "", "", ""};
 
+        TextField[] fields = new TextField[6];
         for (int i = 0; i < labels.length; i++) {
             grid.add(new Label(labels[i]), 0, i);
-            grid.add(new TextField(values[i]), 1, i);
+            fields[i] = new TextField(values[i]);
+            grid.add(fields[i], 1, i);
         }
 
-        return grid;
-    }
+        dialog.getDialogPane().setContent(grid);
+        Platform.runLater(() -> fields[0].requestFocus());
 
-    private StudentModel extractStudentFromGrid(GridPane grid) {
-        String[] fields = new String[6];
-        for (int i = 0; i < 6; i++) {
-            TextField field = (TextField) getNodeByRowColumnIndex(1, i, grid);
-            fields[i] = field.getText().trim();
-        }
-
-        return new StudentModel(
-                fields[0], // Course Code
-                fields[1], // Course Name
-                fields[2], // Exam Date/Time
-                fields[3], // Student ID
-                fields[4], // Student Name
-                fields[5]  // Section
-        );
-    }
-
-    private Node getNodeByRowColumnIndex(final int column, final int row, GridPane gridPane) {
-        for (Node node : gridPane.getChildren()) {
-            if (GridPane.getColumnIndex(node) == column && GridPane.getRowIndex(node) == row) {
-                return node;
+        dialog.setResultConverter(buttonType -> {
+            if (buttonType == actionBtn) {
+                return new StudentModel(
+                        fields[0].getText().trim(), // Course Code
+                        fields[1].getText().trim(), // Course Name
+                        fields[2].getText().trim(), // Exam Date/Time
+                        fields[3].getText().trim(), // Student ID
+                        fields[4].getText().trim(), // Student Name
+                        fields[5].getText().trim()  // Section
+                );
             }
+            return null;
+        });
+
+        return dialog;
+    }
+
+    private int parseMaxStudents() {
+        try {
+            int value = Integer.parseInt(maxStudentsPerRoomField.getText().trim());
+            if (value <= 0) {
+                HelpPopUpView.showAlert(Alert.AlertType.ERROR, "Error", "Invalid Input",
+                        "Please enter a valid positive number for max students per room.");
+            }
+            return value;
+        } catch (NumberFormatException e) {
+            HelpPopUpView.showAlert(Alert.AlertType.ERROR, "Error", "Invalid Input",
+                    "Please enter a valid positive number for max students per room.");
+            return -1;
         }
-        return null;
     }
 
     private VBox createPrintContent() {
-        VBox printContent = new VBox(10);
-        printContent.setPadding(new javafx.geometry.Insets(20));
+        VBox content = new VBox(10);
+        content.setPadding(new Insets(20));
 
         Label title = new Label("Room Assignments Report");
         title.setStyle("-fx-font-weight: bold; -fx-font-size: 16px;");
-        printContent.getChildren().add(title);
-        printContent.getChildren().add(new Label("Generated on: " + java.time.LocalDate.now()));
-        printContent.getChildren().add(new Separator());
+        content.getChildren().addAll(
+                title,
+                new Label("Generated on: " + java.time.LocalDate.now()),
+                new Separator()
+        );
 
         Map<String, List<SeatMapModel>> roomGroups = new HashMap<>();
-        for (SeatMapModel assignment : roomAssignments) {
-            String key = assignment.getCourseCode() + " - " + assignment.getSection();
-            roomGroups.computeIfAbsent(key, k -> new ArrayList<>()).add(assignment);
+        for (SeatMapModel room : roomAssignments) {
+            String key = room.getCourseCode() + " - " + room.getSection();
+            roomGroups.computeIfAbsent(key, k -> new ArrayList<>()).add(room);
         }
 
         for (Map.Entry<String, List<SeatMapModel>> entry : roomGroups.entrySet()) {
             VBox groupBox = new VBox(7);
-            groupBox.setPadding(new javafx.geometry.Insets(10, 0, 10, 0));
+            groupBox.setPadding(new Insets(10, 0, 10, 0));
 
             Label groupLabel = new Label(entry.getKey());
             groupLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
             groupBox.getChildren().add(groupLabel);
 
-            for (SeatMapModel ra : entry.getValue()) {
-                Label roomLabel = new Label("Room: " + ra.getRoomNumber() +
-                        " - Exam: " + ra.getExamDateTime() +
-                        " - Students: " + ra.getStudentCount());
-                groupBox.getChildren().add(roomLabel);
+            for (SeatMapModel room : entry.getValue()) {
+                groupBox.getChildren().add(new Label(String.format(
+                        "Room: %s - Exam: %s - Students: %s",
+                        room.getRoomNumber(), room.getExamDateTime(), room.getStudentCount())));
 
                 // Add student list (only for smaller groups)
-                if (ra.getStudents().size() <= 10) {
+                if (room.getStudents().size() <= 10) {
                     VBox studentBox = new VBox(2);
-                    studentBox.setPadding(new javafx.geometry.Insets(0, 0, 0, 20));
+                    studentBox.setPadding(new Insets(0, 0, 0, 20));
 
-                    for (StudentModel s : ra.getStudents()) {
-                        studentBox.getChildren().add(
-                                new Label(s.getStudentId() + " - " + s.getStudentName())
-                        );
+                    for (StudentModel student : room.getStudents()) {
+                        studentBox.getChildren().add(new Label(
+                                student.getStudentId() + " - " + student.getStudentName()));
                     }
                     groupBox.getChildren().add(studentBox);
                 }
             }
 
             groupBox.getChildren().add(new Separator());
-            printContent.getChildren().add(groupBox);
+            content.getChildren().add(groupBox);
         }
 
-        return printContent;
+        return content;
     }
 }
