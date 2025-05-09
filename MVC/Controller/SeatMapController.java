@@ -13,6 +13,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import java.util.Collections;
 
 public class SeatMapController {
 
@@ -60,7 +61,8 @@ public class SeatMapController {
 
         PrinterJob job = PrinterJob.createPrinterJob();
         if (job != null && job.showPrintDialog(seatGrid.getScene().getWindow())) {
-            VBox printContent = createPrintContent();
+            // Use HelpPopUpView's createPrintContent with a single roomAssignment in a list
+            VBox printContent = HelpPopUpView.createPrintContent(Collections.singletonList(roomAssignment));
 
             if (job.printPage(printContent)) {
                 job.endJob();
@@ -74,37 +76,6 @@ public class SeatMapController {
             HelpPopUpView.showAlert(Alert.AlertType.ERROR, "No Printer",
                     "No Printer Available", "No printer was found.");
         }
-    }
-
-    private VBox createPrintContent() {
-        VBox printContent = new VBox(10);
-
-        // Add header information
-        printContent.getChildren().addAll(
-                new Label("Room: " + roomAssignment.getRoomNumber()),
-                new Label("Course: " + roomAssignment.getCourseCode()),
-                new Label("Exam Date/Time: " + roomAssignment.getExamDateTime()),
-                new Label("Section: " + roomAssignment.getSection()),
-                new Label("Total Students: " + roomAssignment.getStudents().size()),
-                new Label("Seat Map:")
-        );
-
-        // Create grid for printing
-        GridPane printGrid = new GridPane();
-        printGrid.setHgap(20);
-        printGrid.setVgap(20);
-        printGrid.setPadding(new javafx.geometry.Insets(20));
-
-        for (Node node : seatGrid.getChildren()) {
-            Integer row = GridPane.getRowIndex(node);
-            Integer col = GridPane.getColumnIndex(node);
-            if (row != null && col != null) {
-                printGrid.add(node, col, row);
-            }
-        }
-
-        printContent.getChildren().add(printGrid);
-        return printContent;
     }
 
     @FXML
