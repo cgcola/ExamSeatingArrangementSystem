@@ -5,7 +5,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-
 import java.io.IOException;
 
 public class ExamSeatingArrangementApp extends Application {
@@ -15,10 +14,11 @@ public class ExamSeatingArrangementApp extends Application {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/examseatingarangementfinal/MainView.fxml"));
         Parent root = loader.load();
 
-        primaryStage.setTitle("Exam Seating Arrangement System aaaaaaa");
+        primaryStage.setTitle("Exam Seating Arrangement System");  // Set the title of the application window
         primaryStage.setScene(new Scene(root));
+        primaryStage.setMaximized(true);
         primaryStage.show();
-
+        //Display the application window
     }
     // shows window
 
