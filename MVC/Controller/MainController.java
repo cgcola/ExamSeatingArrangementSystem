@@ -23,7 +23,7 @@ import java.io.*;
 import java.net.URL;
 import java.util.*;
 
-public class    MainController implements Initializable {
+public class MainController implements Initializable {
 
     @FXML private TextField maxStudentsPerRoomField;
     @FXML private ComboBox<String> sortComboBox;
@@ -68,6 +68,26 @@ public class    MainController implements Initializable {
         // Setup search field listener
         searchField.textProperty().addListener((observable, oldValue, newValue) ->
                 updateFilteredStudents(newValue));
+
+        /* Kapag pinindot ng dalawang beses maeedit mo na ang studentInfo
+            pwede mo iedit kung ilang click ang gusto mo bago mag popUp yung edit
+            event.getClickCount() == (MouseClickPerformed)
+        */
+
+        studentTable.setRowFactory(tv -> {
+            TableRow<StudentModel> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && (!row.isEmpty())) {
+                    StudentModel selected = row.getItem();
+
+                    HelpPopUpView.createStudentDialog("Edit Student", selected).showAndWait().ifPresent(updated -> {
+                        students.set(students.indexOf(selected), updated);
+                        updateFilteredStudents(searchField.getText());
+                    });
+                }
+            });
+            return row;
+        });
 
         maxStudentsPerRoomField.setText("30");
     }
@@ -178,21 +198,6 @@ public class    MainController implements Initializable {
     private void showAddStudentDialog() {
         HelpPopUpView.createStudentDialog("Add New Student", null).showAndWait().ifPresent(student -> {
             students.add(student);
-            updateFilteredStudents(searchField.getText());
-        });
-    }
-
-    @FXML
-    private void editSelectedStudent() {
-        StudentModel selected = studentTable.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            HelpPopUpView.showAlert(Alert.AlertType.WARNING, "No Selection", "No Student Selected",
-                    "Please select a student to edit.");
-            return;
-        }
-
-        HelpPopUpView.createStudentDialog("Edit Student", selected).showAndWait().ifPresent(updated -> {
-            students.set(students.indexOf(selected), updated);
             updateFilteredStudents(searchField.getText());
         });
     }
