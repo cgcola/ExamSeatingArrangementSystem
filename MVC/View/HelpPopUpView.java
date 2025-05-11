@@ -4,6 +4,8 @@ import Model.DateAndTime;
 import Model.SeatMapModel;
 import Model.StudentModel;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
@@ -55,7 +57,31 @@ public class HelpPopUpView {
             Platform.exit();
         }
     }
-    public static Dialog<StudentModel> createStudentDialog(String title, StudentModel student) {
+
+
+    // Method to update the course code to name mappings
+    private static Map<String, String> courseCodeToNameMap = new HashMap<>();
+    private static Map<String, String> courseNameToCodeMap = new HashMap<>();
+
+    // Method to update the course code to name mappings
+    public static void updateCourseCodeMap(List<StudentModel> students) {
+
+        courseCodeToNameMap.clear();
+        courseNameToCodeMap.clear(); // Clear reverse map
+
+        for (StudentModel student : students) {
+            if (student.getCourseCode() != null && !student.getCourseCode().isEmpty() &&
+                    student.getCourseName() != null && !student.getCourseName().isEmpty()) {
+                courseCodeToNameMap.put(student.getCourseCode().toUpperCase(), student.getCourseName());
+                courseNameToCodeMap.put(student.getCourseName().toLowerCase(), student.getCourseCode());
+            }
+        }
+
+
+    }
+
+
+    public static Dialog<StudentModel> createStudentDialog(String title, StudentModel student, List<StudentModel> allStudents) {
         Dialog<StudentModel> dialog = new Dialog<>();
         dialog.setTitle(title);
         dialog.setHeaderText(title.replace("Student", "student information"));
@@ -73,7 +99,74 @@ public class HelpPopUpView {
                 "Student ID:", "Student Name:", "Section:"};
 
         // Create text fields for most inputs
-        TextField[] fields = new TextField[5]; // Reduced from 5 since we're handling date/time separately
+        TextField courseNameField = new TextField("");
+        TextField studentIdField = new TextField("");
+        TextField studentNameField = new TextField("");
+        TextField sectionField = new TextField("");
+
+        // Create ComboBox for course code with auto-complete
+        ComboBox<String> courseCodeComboBox = new ComboBox<>();
+        courseCodeComboBox.setEditable(true);
+
+
+        // Make sure we have course codes in our map
+        if (courseCodeToNameMap.isEmpty() && allStudents != null && !allStudents.isEmpty()) {
+            updateCourseCodeMap(allStudents);
+        }
+
+        // Get unique course codes and sort them
+        Set<String> uniqueCourseCodes = new HashSet<>(courseCodeToNameMap.keySet());
+        if (allStudents != null) {
+            for (StudentModel s : allStudents) {
+                if (s.getCourseCode() != null && !s.getCourseCode().isEmpty()) {
+                    uniqueCourseCodes.add(s.getCourseCode());
+                }
+            }
+        }
+        List<String> sortedCourseCodes = new ArrayList<>(uniqueCourseCodes);
+        Collections.sort(sortedCourseCodes);
+
+        // Populate ComboBox with course codes
+        courseCodeComboBox.setItems(FXCollections.observableArrayList(sortedCourseCodes));
+
+        // Update course name field when course code changes
+        ChangeListener<String> courseCodeListener = (obs, oldVal, newVal) -> {
+            if (newVal != null && !newVal.trim().isEmpty()) {
+                String trimmedCode = newVal.trim();
+                if (courseCodeToNameMap.containsKey(trimmedCode)) {
+                    courseNameField.setText(courseCodeToNameMap.get(trimmedCode));
+                    courseNameField.setEditable(false);
+                } else {
+                    courseNameField.clear();
+                    courseNameField.setEditable(true);
+                }
+            } else {
+                courseNameField.clear();
+                courseNameField.setEditable(true);
+            }
+        };
+
+        courseCodeComboBox.getSelectionModel().selectedItemProperty().addListener(courseCodeListener);
+        courseCodeComboBox.getEditor().textProperty().addListener(courseCodeListener);
+        courseNameField.textProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null && !newVal.trim().isEmpty()) {
+                String lowerName = newVal.trim().toLowerCase();
+                if (courseNameToCodeMap.containsKey(lowerName)) {
+                    String code = courseNameToCodeMap.get(lowerName);
+                    courseCodeComboBox.setValue(code);
+                    courseCodeComboBox.setDisable(false); // Disable code entry if known
+                } else {
+                    courseCodeComboBox.setDisable(false); // Allow manual input
+                }
+            } else {
+                courseCodeComboBox.setDisable(false);
+            }
+        });
+
+
+
+
+
 
         // DatePicker and TimePicker for exam date/time
         DatePicker datePicker = new DatePicker();
@@ -86,11 +179,11 @@ public class HelpPopUpView {
 
         // Set values if editing an existing student
         if (student != null) {
-            fields[0] = new TextField(student.getCourseCode());
-            fields[1] = new TextField(student.getCourseName());
-            fields[2] = new TextField(student.getStudentId());
-            fields[3] = new TextField(student.getStudentName());
-            fields[4] = new TextField(student.getSection());
+            courseCodeComboBox.setValue(student.getCourseCode());
+            courseNameField.setText(student.getCourseName());
+            studentIdField.setText(student.getStudentId());
+            studentNameField.setText(student.getStudentName());
+            sectionField.setText(student.getSection());
 
             // Parse date and time from the existing value if possible
             try {
@@ -108,42 +201,38 @@ public class HelpPopUpView {
                 // If parsing fails, leave the date/time pickers at default values
                 System.err.println("Could not parse date/time: " + e.getMessage());
             }
-        } else {
-            // Create empty fields for a new student
-            for (int i = 0; i < fields.length; i++) {
-                fields[i] = new TextField("");
-            }
         }
+
         // Remove characters only accepts Integer
-        fields[2].textProperty().addListener((observable, oldValue, newValue) -> {
+        studentIdField.textProperty().addListener((observable, oldValue, newValue) -> {
             if (!newValue.matches("[\\d-]*")) {
-                fields[2].setText(oldValue);
+                studentIdField.setText(oldValue);
             }
         });
 
         // Add labels and fields to the grid
         grid.add(new Label(labels[0]), 0, 0);
-        grid.add(fields[0], 1, 0);
+        grid.add(courseCodeComboBox, 1, 0);
 
         grid.add(new Label(labels[1]), 0, 1);
-        grid.add(fields[1], 1, 1);
+        grid.add(courseNameField, 1, 1);
 
         grid.add(new Label(labels[2]), 0, 2);
         grid.add(dateTimeBox, 1, 2);
 
         grid.add(new Label(labels[3]), 0, 3);
-        grid.add(fields[2], 1, 3);
+        grid.add(studentIdField, 1, 3);
 
         grid.add(new Label(labels[4]), 0, 4);
-        grid.add(fields[3], 1, 4);
+        grid.add(studentNameField, 1, 4);
 
         grid.add(new Label(labels[5]), 0, 5);
-        grid.add(fields[4], 1, 5);
+        grid.add(sectionField, 1, 5);
 
         dialog.getDialogPane().setContent(grid);
 
         // Set initial focus
-        Platform.runLater(() -> fields[0].requestFocus());
+        Platform.runLater(() -> courseCodeComboBox.requestFocus());
 
         dialog.setResultConverter(buttonType -> {
             if (buttonType == actionBtn) {
@@ -155,12 +244,12 @@ public class HelpPopUpView {
                 }
 
                 return new StudentModel(
-                        fields[0].getText().trim(), // Course Code
-                        fields[1].getText().trim(), // Course Name
-                        dateTimeStr,                // Exam Date/Time
-                        fields[2].getText().trim(), // Student ID
-                        fields[3].getText().trim(), // Student Name
-                        fields[4].getText().trim()  // Section
+                        courseCodeComboBox.getValue(),  // Course Code
+                        courseNameField.getText().trim(), // Course Name
+                        dateTimeStr,                    // Exam Date/Time
+                        studentIdField.getText().trim(), // Student ID
+                        studentNameField.getText().trim(), // Student Name
+                        sectionField.getText().trim()   // Section
                 );
             }
             return null;
@@ -168,7 +257,6 @@ public class HelpPopUpView {
 
         return dialog;
     }
-
 
 
 
