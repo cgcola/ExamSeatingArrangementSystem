@@ -1,5 +1,6 @@
 package View;
 
+import Model.DateAndTime;
 import Model.SeatMapModel;
 import Model.StudentModel;
 import javafx.application.Platform;
@@ -36,7 +37,7 @@ public class HelpPopUpView {
 
     public static void showHelpDialog() {
         String helpContent =
-                        "1. Load CSV File: (CSV format: Course Code| Course Name| Exam Date/Time| Student ID | Student Name| Section)\n\n" +
+                "1. Load CSV File: (CSV format: Course Code| Course Name| Exam Date/Time| Student ID | Student Name| Section)\n\n" +
                         "2. Max Students per Room: Set the maximum number of students allowed in each room.\n\n" +
                         "3. Sort by: Choose how to group students (by Course Code, Exam Date/Time, or Section).\n\n" +
                         "4. Assign Rooms: Generate room assignments based on your settings.\n\n" +
@@ -72,13 +73,16 @@ public class HelpPopUpView {
                 "Student ID:", "Student Name:", "Section:"};
 
         // Create text fields for most inputs
-        TextField[] fields = new TextField[5]; // Reduced from 6 since we're handling date/time separately
+        TextField[] fields = new TextField[5]; // Reduced from 5 since we're handling date/time separately
 
-        // DatePicker and TimePicker for exam date/tim
+        // DatePicker and TimePicker for exam date/time
         DatePicker datePicker = new DatePicker();
+        ComboBox<LocalTime> timePicker = TimePicker(); // Using the imported TimePicker method
         datePicker.setValue(LocalDate.now());
-        ComboBox<LocalTime> timePicker = TimePicker();
-        HBox dateTimeBox = new HBox(10, datePicker, timePicker);
+
+        // Create a horizontal box to hold date and time pickers side by side
+        HBox dateTimeBox = new HBox(10);
+        dateTimeBox.getChildren().addAll(datePicker, timePicker);
 
         // Set values if editing an existing student
         if (student != null) {
@@ -110,6 +114,12 @@ public class HelpPopUpView {
                 fields[i] = new TextField("");
             }
         }
+        // Remove characters only accepts Integer
+        fields[2].textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue.matches("[\\d-]*")) {
+                fields[2].setText(oldValue);
+            }
+        });
 
         // Add labels and fields to the grid
         grid.add(new Label(labels[0]), 0, 0);
@@ -158,6 +168,7 @@ public class HelpPopUpView {
 
         return dialog;
     }
+
 
 
 
