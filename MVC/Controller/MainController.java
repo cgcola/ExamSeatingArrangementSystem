@@ -13,6 +13,7 @@ import javafx.print.PrinterJob;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
@@ -26,6 +27,7 @@ import java.util.*;
 public class MainController implements Initializable {
 
     @FXML private TextField maxStudentsPerRoomField;
+
     @FXML private ComboBox<String> sortComboBox;
     @FXML private TextField searchField;
     @FXML private TableView<StudentModel> studentTable;
@@ -39,6 +41,8 @@ public class MainController implements Initializable {
     private List<StudentModel> filteredStudents = new ArrayList<>();
     private List<SeatMapModel> roomAssignments = new ArrayList<>();
     private ExamSeatingModel examService = new ExamSeatingModel();
+
+
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -64,6 +68,16 @@ public class MainController implements Initializable {
                 }
             }
         });
+        // remove characters only accepts Integer
+        maxStudentsPerRoomField.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue.matches("\\d*")) {
+                maxStudentsPerRoomField.setText(newValue.replaceAll("[^\\d]", ""));
+            }
+        });
+        // Set default value for max students per room field
+        maxStudentsPerRoomField.setText("30");
+
+
 
         // Setup search field listener
         searchField.textProperty().addListener((observable, oldValue, newValue) ->
@@ -71,7 +85,7 @@ public class MainController implements Initializable {
 
         /* Kapag pinindot ng dalawang beses maeedit mo na ang studentInfo
             pwede mo iedit kung ilang click ang gusto mo bago mag popUp yung edit
-            event.getClickCount() == (MouseClickPerformed)
+            event.getClickCount() == (countMouseActionPerformed)
         */
 
         studentTable.setRowFactory(tv -> {
@@ -80,8 +94,13 @@ public class MainController implements Initializable {
                 if (event.getClickCount() == 2 && (!row.isEmpty())) {
                     StudentModel selected = row.getItem();
 
-                    HelpPopUpView.createStudentDialog("Edit Student", selected).showAndWait().ifPresent(updated -> {
+                    HelpPopUpView.createStudentDialog("Edit Student", selected, students).showAndWait().ifPresent(updated -> {
                         students.set(students.indexOf(selected), updated);
+                        // Update the course code map with any changes
+                        if (updated.getCourseCode() != null && !updated.getCourseCode().isEmpty() &&
+                                updated.getCourseName() != null && !updated.getCourseName().isEmpty()) {
+                            HelpPopUpView.updateCourseCodeMap(students);
+                        }
                         updateFilteredStudents(searchField.getText());
                     });
                 }
@@ -89,7 +108,8 @@ public class MainController implements Initializable {
             return row;
         });
 
-        maxStudentsPerRoomField.setText("30");
+
+
     }
 
     private void initializeTableColumns() {
@@ -196,8 +216,13 @@ public class MainController implements Initializable {
 
     @FXML
     private void showAddStudentDialog() {
-        HelpPopUpView.createStudentDialog("Add New Student", null).showAndWait().ifPresent(student -> {
+        HelpPopUpView.createStudentDialog("Add New Student", null, students).showAndWait().ifPresent(student -> {
             students.add(student);
+            // Update the course code map with the new entry
+            if (student.getCourseCode() != null && !student.getCourseCode().isEmpty() &&
+                    student.getCourseName() != null && !student.getCourseName().isEmpty()) {
+                HelpPopUpView.updateCourseCodeMap(students);
+            }
             updateFilteredStudents(searchField.getText());
         });
     }
