@@ -6,10 +6,15 @@ import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
-
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
+
+import static Model.DateAndTime.TimePicker;
 
 public class HelpPopUpView {
 
@@ -31,7 +36,7 @@ public class HelpPopUpView {
 
     public static void showHelpDialog() {
         String helpContent =
-                "1. Load CSV File: (CSV format: Course Code| Course Name| Exam Date/Time| Student ID | Student Name| Section)\n\n" +
+                        "1. Load CSV File: (CSV format: Course Code| Course Name| Exam Date/Time| Student ID | Student Name| Section)\n\n" +
                         "2. Max Students per Room: Set the maximum number of students allowed in each room.\n\n" +
                         "3. Sort by: Choose how to group students (by Course Code, Exam Date/Time, or Section).\n\n" +
                         "4. Assign Rooms: Generate room assignments based on your settings.\n\n" +
@@ -49,7 +54,6 @@ public class HelpPopUpView {
             Platform.exit();
         }
     }
-
     public static Dialog<StudentModel> createStudentDialog(String title, StudentModel student) {
         Dialog<StudentModel> dialog = new Dialog<>();
         dialog.setTitle(title);
@@ -63,32 +67,90 @@ public class HelpPopUpView {
         grid.setVgap(10);
         grid.setPadding(new Insets(20, 150, 10, 10));
 
+        // Define labels
         String[] labels = {"Course Code:", "Course Name:", "Exam Date/Time:",
                 "Student ID:", "Student Name:", "Section:"};
-        String[] values = student != null ?
-                new String[]{student.getCourseCode(), student.getCourseName(), student.getExamDateTime(),
-                        student.getStudentId(), student.getStudentName(), student.getSection()} :
-                new String[]{"", "", "", "", "", ""};
 
-        TextField[] fields = new TextField[6];
-        for (int i = 0; i < labels.length; i++) {
-            grid.add(new Label(labels[i]), 0, i);
-            fields[i] = new TextField(values[i]);
-            grid.add(fields[i], 1, i);
+        // Create text fields for most inputs
+        TextField[] fields = new TextField[5]; // Reduced from 6 since we're handling date/time separately
+
+        // DatePicker and TimePicker for exam date/tim
+        DatePicker datePicker = new DatePicker();
+        datePicker.setValue(LocalDate.now());
+        ComboBox<LocalTime> timePicker = TimePicker();
+        HBox dateTimeBox = new HBox(10, datePicker, timePicker);
+
+        // Set values if editing an existing student
+        if (student != null) {
+            fields[0] = new TextField(student.getCourseCode());
+            fields[1] = new TextField(student.getCourseName());
+            fields[2] = new TextField(student.getStudentId());
+            fields[3] = new TextField(student.getStudentName());
+            fields[4] = new TextField(student.getSection());
+
+            // Parse date and time from the existing value if possible
+            try {
+                String dateTimeStr = student.getExamDateTime();
+                if (dateTimeStr != null && !dateTimeStr.isEmpty()) {
+                    // Assuming format like "2025-05-11 14:30"
+                    LocalDateTime dateTime = LocalDateTime.parse(
+                            dateTimeStr,
+                            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+                    );
+                    datePicker.setValue(dateTime.toLocalDate());
+                    timePicker.setValue(dateTime.toLocalTime());
+                }
+            } catch (Exception e) {
+                // If parsing fails, leave the date/time pickers at default values
+                System.err.println("Could not parse date/time: " + e.getMessage());
+            }
+        } else {
+            // Create empty fields for a new student
+            for (int i = 0; i < fields.length; i++) {
+                fields[i] = new TextField("");
+            }
         }
 
+        // Add labels and fields to the grid
+        grid.add(new Label(labels[0]), 0, 0);
+        grid.add(fields[0], 1, 0);
+
+        grid.add(new Label(labels[1]), 0, 1);
+        grid.add(fields[1], 1, 1);
+
+        grid.add(new Label(labels[2]), 0, 2);
+        grid.add(dateTimeBox, 1, 2);
+
+        grid.add(new Label(labels[3]), 0, 3);
+        grid.add(fields[2], 1, 3);
+
+        grid.add(new Label(labels[4]), 0, 4);
+        grid.add(fields[3], 1, 4);
+
+        grid.add(new Label(labels[5]), 0, 5);
+        grid.add(fields[4], 1, 5);
+
         dialog.getDialogPane().setContent(grid);
+
+        // Set initial focus
         Platform.runLater(() -> fields[0].requestFocus());
 
         dialog.setResultConverter(buttonType -> {
             if (buttonType == actionBtn) {
+                // Format the date and time as a single string
+                String dateTimeStr = "";
+                if (datePicker.getValue() != null && timePicker.getValue() != null) {
+                    dateTimeStr = datePicker.getValue().format(DateTimeFormatter.ISO_LOCAL_DATE) +
+                            " " + timePicker.getValue().format(DateTimeFormatter.ofPattern("HH:mm"));
+                }
+
                 return new StudentModel(
                         fields[0].getText().trim(), // Course Code
                         fields[1].getText().trim(), // Course Name
-                        fields[2].getText().trim(), // Exam Date/Time
-                        fields[3].getText().trim(), // Student ID
-                        fields[4].getText().trim(), // Student Name
-                        fields[5].getText().trim()  // Section
+                        dateTimeStr,                // Exam Date/Time
+                        fields[2].getText().trim(), // Student ID
+                        fields[3].getText().trim(), // Student Name
+                        fields[4].getText().trim()  // Section
                 );
             }
             return null;
@@ -96,6 +158,8 @@ public class HelpPopUpView {
 
         return dialog;
     }
+
+
 
     public static VBox createPrintContent(List<SeatMapModel> roomAssignments) {
         VBox content = new VBox(10);
@@ -140,11 +204,9 @@ public class HelpPopUpView {
                     groupBox.getChildren().add(studentBox);
                 }
             }
-
             groupBox.getChildren().add(new Separator());
             content.getChildren().add(groupBox);
         }
-
         return content;
     }
 }
